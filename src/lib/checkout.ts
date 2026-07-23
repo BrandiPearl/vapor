@@ -71,12 +71,22 @@ export function getShippingPrice(id: ShippingId) {
   return SHIPPING_OPTIONS.find((o) => o.id === id)?.price ?? 0;
 }
 
-/** Digits only, with country code (e.g. 61412345678). */
+/**
+ * Digits only, with country code for wa.me (e.g. 61468292610).
+ * Normalizes AU local mobiles like 0468292610 → 61468292610.
+ */
+export function normalizeWhatsAppPhone(raw: string) {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("0") && digits.length === 10) {
+    digits = `61${digits.slice(1)}`;
+  }
+  return digits;
+}
+
 export function getWhatsAppNumber() {
-  const raw =
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ||
-    "61400000000";
-  return raw;
+  return normalizeWhatsAppPhone(
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "61468292610",
+  );
 }
 
 export function buildWhatsAppOrderMessage(input: {

@@ -59,10 +59,16 @@ export const TELEGRAM_URL =
 export const TELEGRAM_HANDLE = `@${TELEGRAM_USERNAME}`;
 
 export function getWhatsAppContactUrl(prefill?: string) {
-  const phone =
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") || "";
-  if (!phone) return null;
-  const base = `https://wa.me/${phone}`;
+  // Inline AU normalize (avoid importing checkout into shared site helpers).
+  let digits = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "61468292610").replace(
+    /\D/g,
+    "",
+  );
+  if (digits.startsWith("0") && digits.length === 10) {
+    digits = `61${digits.slice(1)}`;
+  }
+  if (!digits) return null;
+  const base = `https://wa.me/${digits}`;
   return prefill
     ? `${base}?text=${encodeURIComponent(prefill)}`
     : base;

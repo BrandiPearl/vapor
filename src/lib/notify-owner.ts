@@ -8,11 +8,15 @@
  */
 
 function ownerWhatsAppDigits() {
-  return (
-    process.env.OWNER_WHATSAPP_NUMBER?.replace(/\D/g, "") ||
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ||
-    ""
-  );
+  let digits = (
+    process.env.OWNER_WHATSAPP_NUMBER ||
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ||
+    "61468292610"
+  ).replace(/\D/g, "");
+  if (digits.startsWith("0") && digits.length === 10) {
+    digits = `61${digits.slice(1)}`;
+  }
+  return digits;
 }
 
 export async function notifyOwner(input: {

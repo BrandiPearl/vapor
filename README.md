@@ -34,7 +34,7 @@ Open [http://localhost:3000](http://localhost:3000).
 Orders open WhatsApp and are saved to Supabase (`orders`). Run `supabase/schema-orders-visits.sql` once.
 
 ```bash
-NEXT_PUBLIC_WHATSAPP_NUMBER=61412345678
+NEXT_PUBLIC_WHATSAPP_NUMBER=61468292610
 ```
 
 ### Owner visit alerts
@@ -45,7 +45,7 @@ Logged once per browser session. Optional phone/webhook alerts:
 OWNER_NTFY_TOPIC=aussie-cloud-vape-alerts
 OWNER_NOTIFY_WEBHOOK_URL=https://...
 OWNER_CALLMEBOT_APIKEY=...
-OWNER_WHATSAPP_NUMBER=61412345678
+OWNER_WHATSAPP_NUMBER=61468292610
 ```
 
 ## Product import

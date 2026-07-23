@@ -155,9 +155,15 @@ export function CheckoutClient() {
       shippingPrice,
       total,
     });
+    const url = buildOrderChatUrl(channel, message);
 
     setSubmitting(true);
     setTelegramHint(false);
+
+    // Open during the click gesture so popup blockers do not swallow the chat tab
+    // after the async order save.
+    const chatWindow = window.open("about:blank", "_blank");
+
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -173,9 +179,10 @@ export function CheckoutClient() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error || "Could not save your order. Please try again.");
-        setSubmitting(false);
-        return;
+        setError(
+          data.error ||
+            "Order could not be saved on the server, but you can still send it in chat.",
+        );
       }
 
       if (channel === "telegram") {
@@ -187,11 +194,21 @@ export function CheckoutClient() {
         }
       }
 
-      const url = buildOrderChatUrl(channel, message);
-      window.open(url, "_blank", "noopener,noreferrer");
+      if (chatWindow && !chatWindow.closed) {
+        chatWindow.location.href = url;
+      } else {
+        window.location.assign(url);
+      }
       clearCart();
     } catch {
-      setError("Could not save your order. Please try again.");
+      setError(
+        "Could not save your order on the server. Opening chat so you can still send it.",
+      );
+      if (chatWindow && !chatWindow.closed) {
+        chatWindow.location.href = url;
+      } else {
+        window.location.assign(url);
+      }
     } finally {
       setSubmitting(false);
     }
