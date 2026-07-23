@@ -71,6 +71,17 @@ export function getShippingPrice(id: ShippingId) {
   return SHIPPING_OPTIONS.find((o) => o.id === id)?.price ?? 0;
 }
 
+/** Minimum cart subtotal (items only, before shipping) required to place an order. */
+export const MIN_ORDER_SUBTOTAL = 139;
+
+export function meetsMinimumOrder(subtotal: number) {
+  return subtotal >= MIN_ORDER_SUBTOTAL;
+}
+
+export function minimumOrderShortfall(subtotal: number) {
+  return Math.max(0, MIN_ORDER_SUBTOTAL - subtotal);
+}
+
 /**
  * Digits only, with country code for wa.me (e.g. 61468292610).
  * Normalizes AU local mobiles like 0468292610 → 61468292610.

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyOwner } from "@/lib/notify-owner";
 import { formatPrice } from "@/lib/site";
+import { MIN_ORDER_SUBTOTAL, meetsMinimumOrder } from "@/lib/checkout";
 
 type OrderBody = {
   form: {
@@ -47,6 +48,15 @@ export async function POST(request: Request) {
     if (!form?.email || !form?.phone || !items?.length) {
       return NextResponse.json(
         { error: "Missing required order fields." },
+        { status: 400 },
+      );
+    }
+
+    if (!meetsMinimumOrder(subtotal)) {
+      return NextResponse.json(
+        {
+          error: `Minimum order is ${formatPrice(MIN_ORDER_SUBTOTAL)}. Add more items to continue.`,
+        },
         { status: 400 },
       );
     }

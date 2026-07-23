@@ -10,6 +10,12 @@ import {
 } from "@/lib/cart-store";
 import { QtyStepper } from "@/components/cart/QtyStepper";
 import { RemoveFromCartButton } from "@/components/cart/RemoveFromCartButton";
+import {
+  MIN_ORDER_SUBTOTAL,
+  meetsMinimumOrder,
+  minimumOrderShortfall,
+} from "@/lib/checkout";
+import { clsx } from "clsx";
 
 export default function CartPage() {
   const items = useCart((s) => s.items);
@@ -19,6 +25,8 @@ export default function CartPage() {
   const clearCart = useCart((s) => s.clearCart);
   const total = useCart(selectCartSubtotal);
   const count = useCart(selectCartCount);
+  const canCheckout = meetsMinimumOrder(total);
+  const shortfall = minimumOrderShortfall(total);
 
   if (!hasHydrated) {
     return (
@@ -135,19 +143,38 @@ export default function CartPage() {
             <span className="font-semibold">Total</span>
             <span className="text-xl font-bold">{formatPrice(total)}</span>
           </div>
-          <Link
-            href="/checkout"
-            className="mt-4 flex w-full items-center justify-center rounded-md bg-brand px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-brand-soft"
-          >
-            Proceed to checkout
-          </Link>
+          {!canCheckout && (
+            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-950">
+              Minimum order is {formatPrice(MIN_ORDER_SUBTOTAL)}. Add{" "}
+              {formatPrice(shortfall)} more to check out.
+            </p>
+          )}
+          {canCheckout ? (
+            <Link
+              href="/checkout"
+              className="mt-4 flex w-full items-center justify-center rounded-md bg-brand px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-brand-soft"
+            >
+              Proceed to checkout
+            </Link>
+          ) : (
+            <Link
+              href="/shop"
+              className="mt-4 flex w-full items-center justify-center rounded-md bg-brand px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-brand-soft"
+            >
+              Add more items
+            </Link>
+          )}
           <p className="mt-2 text-center text-xs text-muted">
-            Checkout opens WhatsApp or Telegram with your order. No payments on
-            this site.
+            {canCheckout
+              ? "Checkout opens WhatsApp or Telegram with your order. No payments on this site."
+              : `Orders under ${formatPrice(MIN_ORDER_SUBTOTAL)} cannot be placed.`}
           </p>
           <Link
             href="/shop"
-            className="mt-4 block text-center text-sm font-semibold text-accent hover:underline"
+            className={clsx(
+              "mt-4 block text-center text-sm font-semibold text-accent hover:underline",
+              !canCheckout && "sr-only",
+            )}
           >
             Continue shopping
           </Link>

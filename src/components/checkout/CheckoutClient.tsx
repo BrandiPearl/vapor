@@ -16,11 +16,14 @@ import {
 } from "@/lib/cart-store";
 import {
   AU_STATES,
+  MIN_ORDER_SUBTOTAL,
   PAYMENT_OPTIONS,
   SHIPPING_OPTIONS,
   buildOrderChatUrl,
   buildWhatsAppOrderMessage,
   getShippingPrice,
+  meetsMinimumOrder,
+  minimumOrderShortfall,
   type CheckoutFormData,
   type OrderChannel,
   type PaymentId,
@@ -72,6 +75,8 @@ export function CheckoutClient() {
 
   const shippingPrice = getShippingPrice(form.shipping);
   const total = subtotal + shippingPrice;
+  const canPlaceOrder = meetsMinimumOrder(subtotal);
+  const shortfall = minimumOrderShortfall(subtotal);
 
   const set =
     (key: keyof CheckoutFormData) =>
@@ -111,9 +116,44 @@ export function CheckoutClient() {
     );
   }
 
+  if (!canPlaceOrder) {
+    return (
+      <div className="container-site flex min-h-[50vh] flex-col items-center justify-center py-20 text-center">
+        <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-brand">
+          Minimum order {formatPrice(MIN_ORDER_SUBTOTAL)}
+        </h1>
+        <p className="mt-3 max-w-md text-sm text-muted">
+          Your cart is {formatPrice(subtotal)}. Add{" "}
+          {formatPrice(shortfall)} more before placing an order.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/shop"
+            className="inline-flex rounded-md bg-brand px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-brand-soft"
+          >
+            Add more items
+          </Link>
+          <Link
+            href="/cart"
+            className="inline-flex rounded-md border border-border bg-white px-6 py-3 text-sm font-bold uppercase tracking-wider text-brand transition hover:border-accent"
+          >
+            View cart
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!meetsMinimumOrder(subtotal)) {
+      setError(
+        `Minimum order is ${formatPrice(MIN_ORDER_SUBTOTAL)}. Add ${formatPrice(minimumOrderShortfall(subtotal))} more.`,
+      );
+      return;
+    }
 
     const required: (keyof CheckoutFormData)[] = [
       "email",
