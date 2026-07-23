@@ -58,7 +58,7 @@ export default function ContactPage() {
 
           {sent ? (
             <p className="mt-6 rounded-md bg-[#e8f7ef] px-4 py-3 text-sm text-accent">
-              Thanks — your message has been received. We&apos;ll get back to
+              Thanks, your message has been received. We&apos;ll get back to
               you shortly.
             </p>
           ) : (

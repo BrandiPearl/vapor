@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { clsx } from "clsx";
-import { faqs } from "@/lib/products";
+import { faqs } from "@/lib/site";
 
 export function FaqSection() {
   const [open, setOpen] = useState<number | null>(0);
@@ -11,7 +11,7 @@ export function FaqSection() {
   return (
     <section className="container-site py-16">
       <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-tight text-brand md:text-3xl">
-        FAQs — Aussie Cloud Vape
+        FAQs: Aussie Cloud Vape
       </h2>
       <div className="mt-8 divide-y divide-border border-y border-border bg-surface">
         {faqs.map((faq, i) => {

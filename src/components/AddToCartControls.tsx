@@ -3,44 +3,39 @@
 import { useState } from "react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-store";
+import { QtyStepper } from "@/components/cart/QtyStepper";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 
 export function AddToCartControls({ product }: { product: Product }) {
-  const addItem = useCart((s) => s.addItem);
   const [qty, setQty] = useState(1);
-  const [added, setAdded] = useState(false);
+  const cartQty = useCart(
+    (s) => s.items.find((i) => i.product.id === product.id)?.quantity ?? 0,
+  );
+  const hasHydrated = useCart((s) => s.hasHydrated);
+  const inStock = product.inStock !== false;
 
   return (
-    <div className="mt-8 flex flex-wrap items-center gap-3">
-      <div className="flex items-center border border-border bg-surface">
-        <button
-          type="button"
-          className="px-3 py-3 text-lg"
-          onClick={() => setQty((q) => Math.max(1, q - 1))}
-          aria-label="Decrease quantity"
-        >
-          −
-        </button>
-        <span className="min-w-10 text-center text-sm font-semibold">{qty}</span>
-        <button
-          type="button"
-          className="px-3 py-3 text-lg"
-          onClick={() => setQty((q) => q + 1)}
-          aria-label="Increase quantity"
-        >
-          +
-        </button>
+    <div className="mt-8 space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <QtyStepper
+          value={qty}
+          onChange={setQty}
+          disabled={!inStock}
+          className="w-full justify-between sm:w-auto"
+        />
+        <AddToCartButton
+          product={product}
+          quantity={qty}
+          className="w-full sm:w-auto sm:min-w-[12rem]"
+          onAdded={() => setQty(1)}
+        />
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          addItem(product, qty);
-          setAdded(true);
-          setTimeout(() => setAdded(false), 1600);
-        }}
-        className="rounded-md bg-brand px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-brand-soft"
-      >
-        {added ? "Added!" : "Add to cart"}
-      </button>
+      {hasHydrated && cartQty > 0 && (
+        <p className="text-sm text-muted">
+          <span className="font-semibold text-accent">{cartQty}</span> already in
+          your cart
+        </p>
+      )}
     </div>
   );
 }

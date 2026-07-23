@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { footerLinks, navLinks } from "@/lib/products";
+import { footerLinks, navLinks } from "@/lib/site";
 
 export function Footer() {
   return (
@@ -8,14 +8,20 @@ export function Footer() {
       <div className="container-site grid gap-10 py-14 md:grid-cols-3">
         <div>
           <div className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="" width={40} height={40} />
+            <Image
+              src="/logo.svg"
+              alt=""
+              width={48}
+              height={48}
+              className="h-11 w-11 shrink-0"
+            />
             <p className="font-[family-name:var(--font-display)] text-lg font-bold">
               Aussie Cloud Vape
             </p>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
             Australia&apos;s trusted online destination for authentic disposable
-            vapes, pods, devices, and e-liquids — discreet shipping nationwide.
+            vapes, pods, devices, and e-liquids. Discreet shipping nationwide.
           </p>
         </div>
 

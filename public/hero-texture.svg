@@ -1,12 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" fill="none">
-  <g opacity="0.35">
-    <path d="M-20 520c80-40 160-40 240 0s160 40 240 0 160-40 240 0 160 40 240 0 160-40 240 0" stroke="white" stroke-width="1.5"/>
-    <path d="M-20 560c80-40 160-40 240 0s160 40 240 0 160-40 240 0 160 40 240 0 160-40 240 0" stroke="white" stroke-width="1"/>
-    <path d="M-20 480c80-40 160-40 240 0s160 40 240 0 160-40 240 0 160 40 240 0 160-40 240 0" stroke="white" stroke-width="1"/>
-    <circle cx="920" cy="180" r="90" fill="white" opacity="0.08"/>
-    <circle cx="980" cy="210" r="55" fill="white" opacity="0.1"/>
-    <circle cx="860" cy="210" r="45" fill="white" opacity="0.08"/>
-    <circle cx="200" cy="160" r="70" fill="white" opacity="0.06"/>
-    <circle cx="250" cy="180" r="40" fill="white" opacity="0.08"/>
+  <defs>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="white" stop-opacity="0"/>
+      <stop offset="40%" stop-color="white" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g opacity="0.45">
+    <path d="M-40 500c90-48 180-48 270 0s180 48 270 0 180-48 270 0 180 48 270 0 180-48 270 0" stroke="url(#wave)" stroke-width="1.8"/>
+    <path d="M-40 545c90-48 180-48 270 0s180 48 270 0 180-48 270 0 180 48 270 0 180-48 270 0" stroke="white" stroke-width="1" opacity="0.55"/>
+    <path d="M-40 455c90-48 180-48 270 0s180 48 270 0 180-48 270 0 180 48 270 0 180-48 270 0" stroke="white" stroke-width="1.2" opacity="0.4"/>
+    <path d="M-40 390c110-56 220-56 330 0s220 56 330 0 220-56 330 0" stroke="#7DFFB3" stroke-width="1" opacity="0.35"/>
+    <circle cx="920" cy="170" r="100" fill="white" opacity="0.07"/>
+    <circle cx="990" cy="205" r="60" fill="#7DFFB3" opacity="0.12"/>
+    <circle cx="850" cy="200" r="48" fill="white" opacity="0.08"/>
+    <circle cx="180" cy="150" r="80" fill="white" opacity="0.06"/>
+    <circle cx="250" cy="185" r="44" fill="#7DFFB3" opacity="0.1"/>
   </g>
 </svg>
