@@ -142,7 +142,8 @@ export default function CartPage() {
             Proceed to checkout
           </Link>
           <p className="mt-2 text-center text-xs text-muted">
-            Checkout opens WhatsApp with your order. No payments on this site.
+            Checkout opens WhatsApp or Telegram with your order. No payments on
+            this site.
           </p>
           <Link
             href="/shop"

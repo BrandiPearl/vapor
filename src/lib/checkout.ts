@@ -31,12 +31,12 @@ export const PAYMENT_OPTIONS = [
   {
     id: "bank" as const,
     label: "Bank transfer",
-    hint: "After you send your order on WhatsApp, we will reply with bank details.",
+    hint: "After you send your order on WhatsApp or Telegram, we will reply with bank details.",
   },
   {
     id: "payid" as const,
     label: "PAYID",
-    hint: "After you send your order on WhatsApp, we will reply with PAYID details.",
+    hint: "After you send your order on WhatsApp or Telegram, we will reply with PAYID details.",
   },
 ] as const;
 
@@ -150,4 +150,24 @@ export function buildWhatsAppOrderMessage(input: {
 export function buildWhatsAppUrl(message: string) {
   const phone = getWhatsAppNumber();
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
+
+/** Opens Telegram chat with Declan (@garyb300). Prefills via share text when possible. */
+export function getTelegramUrl() {
+  return (
+    process.env.NEXT_PUBLIC_TELEGRAM_URL?.trim() || "https://t.me/garyb300"
+  );
+}
+
+export function buildTelegramOrderUrl(_message: string) {
+  // Direct chat with @garyb300; order text is copied in the checkout UI.
+  return getTelegramUrl();
+}
+
+export type OrderChannel = "whatsapp" | "telegram";
+
+export function buildOrderChatUrl(channel: OrderChannel, message: string) {
+  return channel === "telegram"
+    ? buildTelegramOrderUrl(message)
+    : buildWhatsAppUrl(message);
 }

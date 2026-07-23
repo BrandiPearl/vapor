@@ -7,7 +7,7 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-import { Lock, MessageCircle } from "lucide-react";
+import { Lock, MessageCircle, Send } from "lucide-react";
 import { formatPrice } from "@/lib/site";
 import {
   selectCartCount,
@@ -18,14 +18,16 @@ import {
   AU_STATES,
   PAYMENT_OPTIONS,
   SHIPPING_OPTIONS,
+  buildOrderChatUrl,
   buildWhatsAppOrderMessage,
-  buildWhatsAppUrl,
   getShippingPrice,
   type CheckoutFormData,
+  type OrderChannel,
   type PaymentId,
   type ShippingId,
 } from "@/lib/checkout";
 import { clsx } from "clsx";
+import { TELEGRAM_HANDLE } from "@/lib/site";
 
 const initialForm: CheckoutFormData = {
   email: "",
@@ -65,6 +67,8 @@ export function CheckoutClient() {
   const [error, setError] = useState<string | null>(null);
   const [couponNote, setCouponNote] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [channel, setChannel] = useState<OrderChannel>("whatsapp");
+  const [telegramHint, setTelegramHint] = useState(false);
 
   const shippingPrice = getShippingPrice(form.shipping);
   const total = subtotal + shippingPrice;
@@ -153,6 +157,7 @@ export function CheckoutClient() {
     });
 
     setSubmitting(true);
+    setTelegramHint(false);
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -173,7 +178,16 @@ export function CheckoutClient() {
         return;
       }
 
-      const url = buildWhatsAppUrl(message);
+      if (channel === "telegram") {
+        try {
+          await navigator.clipboard.writeText(message);
+          setTelegramHint(true);
+        } catch {
+          // clipboard may be blocked; still open Telegram
+        }
+      }
+
+      const url = buildOrderChatUrl(channel, message);
       window.open(url, "_blank", "noopener,noreferrer");
       clearCart();
     } catch {
@@ -194,8 +208,8 @@ export function CheckoutClient() {
             Place your order
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            No card payments on this site. Complete your details and we will
-            open WhatsApp with your order so our team can confirm and send
+            No card payments on this site. Complete your details, then send the
+            order on WhatsApp or Telegram so our team can confirm and share
             payment instructions.
           </p>
         </div>
@@ -475,7 +489,8 @@ export function CheckoutClient() {
                 Payment
               </h2>
               <p className="mt-1 text-sm text-muted">
-                Choose how you prefer to pay. Details are arranged on WhatsApp.
+                Choose how you prefer to pay. Details are arranged on WhatsApp
+                or Telegram.
               </p>
               <div className="mt-4 space-y-2">
                 {PAYMENT_OPTIONS.map((opt) => (
@@ -526,18 +541,69 @@ export function CheckoutClient() {
               </p>
             )}
 
+            <section>
+              <h2 className="font-[family-name:var(--font-display)] text-xl font-bold text-brand">
+                Send order via
+              </h2>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setChannel("whatsapp")}
+                  className={clsx(
+                    "flex items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm font-semibold transition",
+                    channel === "whatsapp"
+                      ? "border-accent bg-white text-brand ring-1 ring-accent/30"
+                      : "border-border bg-white/70 text-foreground",
+                  )}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChannel("telegram")}
+                  className={clsx(
+                    "flex items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm font-semibold transition",
+                    channel === "telegram"
+                      ? "border-accent bg-white text-brand ring-1 ring-accent/30"
+                      : "border-border bg-white/70 text-foreground",
+                  )}
+                >
+                  <Send className="h-4 w-4" />
+                  Telegram
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-muted">
+                {channel === "telegram"
+                  ? `Opens ${TELEGRAM_HANDLE} and copies your order so you can paste it in the chat.`
+                  : "Opens WhatsApp with your order details filled in."}
+              </p>
+            </section>
+
             <button
               type="submit"
               disabled={submitting}
               className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand px-6 py-4 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <MessageCircle className="h-4 w-4" />
-              {submitting ? "Saving order…" : `Place order ${formatPrice(total)}`}
+              {channel === "telegram" ? (
+                <Send className="h-4 w-4" />
+              ) : (
+                <MessageCircle className="h-4 w-4" />
+              )}
+              {submitting
+                ? "Saving order…"
+                : `Place order on ${channel === "telegram" ? "Telegram" : "WhatsApp"} ${formatPrice(total)}`}
               <Lock className="h-3.5 w-3.5 opacity-80" />
             </button>
+            {telegramHint && (
+              <p className="rounded-md bg-[#e8f7ef] px-4 py-3 text-center text-xs text-accent">
+                Order copied. Paste it in the Telegram chat with {TELEGRAM_HANDLE}.
+              </p>
+            )}
             <p className="text-center text-xs text-muted">
-              Saves your order, then opens WhatsApp. No payment is taken on this
-              website.
+              Saves your order, then opens{" "}
+              {channel === "telegram" ? "Telegram" : "WhatsApp"}. No payment is
+              taken on this website.
             </p>
           </div>
 

@@ -49,6 +49,25 @@ export const footerLinks = [
   { href: "/privacy", label: "Privacy Policy" },
 ];
 
+/** Customer chat channels */
+export const TELEGRAM_USERNAME =
+  process.env.NEXT_PUBLIC_TELEGRAM_USERNAME?.replace(/^@/, "") || "garyb300";
+
+export const TELEGRAM_URL =
+  process.env.NEXT_PUBLIC_TELEGRAM_URL || `https://t.me/${TELEGRAM_USERNAME}`;
+
+export const TELEGRAM_HANDLE = `@${TELEGRAM_USERNAME}`;
+
+export function getWhatsAppContactUrl(prefill?: string) {
+  const phone =
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") || "";
+  if (!phone) return null;
+  const base = `https://wa.me/${phone}`;
+  return prefill
+    ? `${base}?text=${encodeURIComponent(prefill)}`
+    : base;
+}
+
 export function formatPrice(amount: number) {
   return new Intl.NumberFormat("en-AU", {
     style: "currency",

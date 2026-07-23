@@ -1,10 +1,18 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Send } from "lucide-react";
+import {
+  TELEGRAM_HANDLE,
+  TELEGRAM_URL,
+  getWhatsAppContactUrl,
+} from "@/lib/site";
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
+  const whatsappUrl = getWhatsAppContactUrl(
+    "Hi Aussie Cloud Vape, I have a question.",
+  );
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -22,9 +30,17 @@ export default function ContactPage() {
             Message us
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-            We offer authentic vape products, competitive prices, fast
-            Australia-wide delivery, secure payments, reliable support, and a
-            hassle-free online shopping experience.
+            Reach us on WhatsApp or{" "}
+            <a
+              href={TELEGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent hover:underline"
+            >
+              Telegram
+            </a>{" "}
+            for the fastest reply, or send an email. We&apos;re happy to help
+            with orders, stock, and delivery.
           </p>
 
           <ul className="mt-8 space-y-4 text-sm">
@@ -41,11 +57,54 @@ export default function ContactPage() {
                 sales@aussiecloudvape.com.au
               </a>
             </li>
+            {whatsappUrl && (
+              <li className="flex items-center gap-3">
+                <MessageCircle className="h-4 w-4 text-accent" />
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-accent hover:underline"
+                >
+                  WhatsApp us
+                </a>
+              </li>
+            )}
             <li className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-accent" />
-              1300 CLOUD VAPE
+              <Send className="h-4 w-4 text-accent" />
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-accent hover:underline"
+              >
+                Telegram {TELEGRAM_HANDLE}
+              </a>
             </li>
           </ul>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-brand px-5 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-brand-soft"
+              >
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp
+              </a>
+            )}
+            <a
+              href={TELEGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-md border border-brand bg-white px-5 py-3 text-sm font-bold uppercase tracking-wider text-brand transition hover:bg-[#e8f7ef]"
+            >
+              <Send className="h-4 w-4" />
+              Telegram
+            </a>
+          </div>
         </div>
 
         <form
