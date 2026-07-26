@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { AgeGate } from "@/components/AgeGate";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { VisitBeacon } from "@/components/VisitBeacon";
+import { TawkToChat } from "@/components/TawkToChat";
 
 export default function StoreLayout({
   children,
@@ -13,6 +14,7 @@ export default function StoreLayout({
     <div className="flex min-h-dvh flex-1 flex-col">
       <AgeGate />
       <VisitBeacon />
+      <TawkToChat />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

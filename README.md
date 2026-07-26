@@ -7,7 +7,8 @@ Next.js storefront for **Aussie Cloud Vape** (domain: [cloudsourceau.com](https:
 - Next.js (App Router) + TypeScript + Tailwind CSS v4
 - Supabase (products, storage, orders, visits)
 - Client cart (Zustand + localStorage)
-- WhatsApp checkout (no card payments on-site)
+- WhatsApp / Telegram checkout (no card payments on-site)
+- Optional Tawk.to live chat on the storefront
 
 ## Run locally
 
@@ -36,6 +37,20 @@ Orders open WhatsApp and are saved to Supabase (`orders`). Run `supabase/schema-
 ```bash
 NEXT_PUBLIC_WHATSAPP_NUMBER=61468292610
 ```
+
+### Live chat (Tawk.to)
+
+1. Create a free property at [tawk.to](https://www.tawk.to/).
+2. Open **Administration → Channels → Chat Widget** and copy the embed URL path:
+   `https://embed.tawk.to/{PROPERTY_ID}/{WIDGET_ID}`
+3. Add both IDs to `.env.local` and Netlify (rebuild after changing):
+
+```bash
+NEXT_PUBLIC_TAWK_PROPERTY_ID=6a669992f72ee51d4882401d
+NEXT_PUBLIC_TAWK_WIDGET_ID=1jugcfpk6
+```
+
+The widget only loads on storefront pages (not `/admin`). Answer chats in the Tawk dashboard or mobile app.
 
 ### Owner visit alerts
 
