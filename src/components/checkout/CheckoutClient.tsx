@@ -30,8 +30,6 @@ import {
   type ShippingId,
 } from "@/lib/checkout";
 import { clsx } from "clsx";
-import { TELEGRAM_HANDLE } from "@/lib/site";
-
 const initialForm: CheckoutFormData = {
   email: "",
   firstName: "",
@@ -632,7 +630,7 @@ export function CheckoutClient() {
               </div>
               <p className="mt-2 text-xs text-muted">
                 {channel === "telegram"
-                  ? `Opens ${TELEGRAM_HANDLE} and copies your order so you can paste it in the chat.`
+                  ? "Opens Telegram and copies your order so you can paste it in the chat."
                   : "Opens WhatsApp with your order details filled in."}
               </p>
             </section>
@@ -654,7 +652,7 @@ export function CheckoutClient() {
             </button>
             {telegramHint && (
               <p className="rounded-md bg-[#e8f7ef] px-4 py-3 text-center text-xs text-accent">
-                Order copied. Paste it in the Telegram chat with {TELEGRAM_HANDLE}.
+                Order copied. Paste it in the Telegram chat.
               </p>
             )}
             <p className="text-center text-xs text-muted">

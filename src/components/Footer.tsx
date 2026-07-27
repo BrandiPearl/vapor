@@ -3,7 +3,6 @@ import Image from "next/image";
 import {
   footerLinks,
   navLinks,
-  TELEGRAM_HANDLE,
   TELEGRAM_URL,
   getWhatsAppContactUrl,
 } from "@/lib/site";
@@ -71,18 +70,12 @@ export function Footer() {
             <p className="text-sm font-semibold uppercase tracking-wider text-white/50">
               Contact
             </p>
-            <a
-              href="mailto:sales@aussiecloudvape.com.au"
-              className="mt-2 block text-sm text-white/80 hover:text-white"
-            >
-              sales@aussiecloudvape.com.au
-            </a>
             {whatsappUrl && (
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1.5 block text-sm text-white/80 hover:text-white"
+                className="mt-2 block text-sm text-white/80 hover:text-white"
               >
                 WhatsApp
               </a>
@@ -93,7 +86,7 @@ export function Footer() {
               rel="noopener noreferrer"
               className="mt-1.5 block text-sm text-white/80 hover:text-white"
             >
-              Telegram {TELEGRAM_HANDLE}
+              Telegram
             </a>
           </div>
         </div>

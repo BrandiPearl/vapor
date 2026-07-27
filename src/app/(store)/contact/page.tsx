@@ -1,12 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Mail, MapPin, MessageCircle, Send } from "lucide-react";
-import {
-  TELEGRAM_HANDLE,
-  TELEGRAM_URL,
-  getWhatsAppContactUrl,
-} from "@/lib/site";
+import { MapPin, MessageCircle, Send } from "lucide-react";
+import { TELEGRAM_URL, getWhatsAppContactUrl } from "@/lib/site";
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
@@ -39,23 +35,14 @@ export default function ContactPage() {
             >
               Telegram
             </a>{" "}
-            for the fastest reply, or send an email. We&apos;re happy to help
-            with orders, stock, and delivery.
+            for the fastest reply. We&apos;re happy to help with orders, stock,
+            and delivery.
           </p>
 
           <ul className="mt-8 space-y-4 text-sm">
             <li className="flex items-center gap-3">
               <MapPin className="h-4 w-4 text-accent" />
               Brisbane, Australia
-            </li>
-            <li className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-accent" />
-              <a
-                href="mailto:sales@aussiecloudvape.com.au"
-                className="hover:text-accent"
-              >
-                sales@aussiecloudvape.com.au
-              </a>
             </li>
             {whatsappUrl && (
               <li className="flex items-center gap-3">
@@ -78,7 +65,7 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
                 className="font-medium text-accent hover:underline"
               >
-                Telegram {TELEGRAM_HANDLE}
+                Telegram
               </a>
             </li>
           </ul>

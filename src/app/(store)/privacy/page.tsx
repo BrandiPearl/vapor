@@ -16,9 +16,9 @@ export default function PrivacyPage() {
           to fulfil your order.
         </p>
         <p>
-          For privacy requests, email sales@aussiecloudvape.com.au. A complete
-          privacy policy will ship with the Supabase-backed auth and checkout
-          release.
+          For privacy requests, contact us on WhatsApp or Telegram via the
+          Contact page. A complete privacy policy will ship with the
+          Supabase-backed auth and checkout release.
         </p>
       </div>
     </div>

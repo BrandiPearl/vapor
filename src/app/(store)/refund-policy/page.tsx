@@ -25,7 +25,7 @@ export default function RefundPolicyPage() {
       </p>
       <p>
         Shipping delays caused by carriers are not grounds for a refund once the
-        order has been dispatched. Contact sales@aussiecloudvape.com.au for
+        order has been dispatched. Contact us on WhatsApp or Telegram for
         support.
       </p>
     </PolicyLayout>
