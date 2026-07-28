@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,6 +10,13 @@ import {
 } from "@/lib/catalog";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { AddToCartControls } from "@/components/AddToCartControls";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  absoluteUrl,
+  breadcrumbJsonLd,
+  productJsonLd,
+  truncateDescription,
+} from "@/lib/seo";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -25,13 +33,45 @@ export async function generateStaticParams() {
   }
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Product not found" };
+
+  const title = `${product.name} | Buy Online Australia`;
+  const description = truncateDescription(
+    product.description ||
+      `Buy ${product.name} online at Aussie Cloud Vape. ${product.brand} ${product.category} with fast Australia-wide delivery.`,
+  );
+  const canonical = `/product/${product.slug}`;
+  const image =
+    product.image.startsWith("http") || product.image.startsWith("/")
+      ? product.image
+      : `/${product.image}`;
+
   return {
-    title: product.name,
-    description: product.description || product.name,
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url: absoluteUrl(canonical),
+      type: "website",
+      locale: "en_AU",
+      images: [
+        {
+          url: image.startsWith("http") ? image : absoluteUrl(image),
+          alt: product.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image.startsWith("http") ? image : absoluteUrl(image)],
+    },
   };
 }
 
@@ -48,21 +88,42 @@ export default async function ProductPage({ params }: Props) {
   const inStock = product.inStock !== false;
   const isRemote = product.image.startsWith("http");
 
+  const breadcrumbs = [
+    { name: "Home", path: "/" },
+    { name: product.category, path: categoryHref },
+    { name: product.name, path: `/product/${product.slug}` },
+  ];
+
   return (
     <div className="pb-16">
+      <JsonLd
+        data={[productJsonLd(product), breadcrumbJsonLd(breadcrumbs)]}
+      />
       <div className="border-b border-border bg-white">
         <div className="container-site overflow-hidden py-3 text-sm text-muted sm:py-4">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <Link href="/" className="shrink-0 hover:text-accent">
-              Home
-            </Link>
-            <span className="shrink-0">/</span>
-            <Link href={categoryHref} className="shrink-0 hover:text-accent">
-              {product.category}
-            </Link>
-            <span className="shrink-0">/</span>
-            <span className="truncate text-foreground">{product.name}</span>
-          </div>
+          <nav aria-label="Breadcrumb">
+            <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <li className="shrink-0">
+                <Link href="/" className="hover:text-accent">
+                  Home
+                </Link>
+              </li>
+              <li className="shrink-0" aria-hidden="true">
+                /
+              </li>
+              <li className="shrink-0">
+                <Link href={categoryHref} className="hover:text-accent">
+                  {product.category}
+                </Link>
+              </li>
+              <li className="shrink-0" aria-hidden="true">
+                /
+              </li>
+              <li className="truncate text-foreground" aria-current="page">
+                {product.name}
+              </li>
+            </ol>
+          </nav>
         </div>
       </div>
 

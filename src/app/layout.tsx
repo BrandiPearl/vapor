@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
 import { DM_Sans, Syne } from "next/font/google";
+import {
+  DEFAULT_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  defaultOpenGraph,
+  defaultTwitter,
+} from "@/lib/seo";
 import "./globals.css";
 
 const body = DM_Sans({
@@ -15,12 +22,23 @@ const display = Syne({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Aussie Cloud Vape | Buy Disposable Vapes Online Australia",
-    template: "%s | Aussie Cloud Vape",
+    default: `${SITE_NAME} | Buy Disposable Vapes Online Australia`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Australia's trusted online vape shop. Shop authentic disposable vapes, pods, devices and e-liquids with fast nationwide delivery.",
+  description: DEFAULT_DESCRIPTION,
+  openGraph: {
+    ...defaultOpenGraph,
+    title: `${SITE_NAME} | Buy Disposable Vapes Online Australia`,
+    description: DEFAULT_DESCRIPTION,
+    url: SITE_URL,
+  },
+  twitter: {
+    ...defaultTwitter,
+    title: `${SITE_NAME} | Buy Disposable Vapes Online Australia`,
+    description: DEFAULT_DESCRIPTION,
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

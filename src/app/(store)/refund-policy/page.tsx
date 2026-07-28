@@ -1,3 +1,13 @@
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Refund Policy",
+  description:
+    "Refund and return policy for Aussie Cloud Vape orders including damaged or incorrect products.",
+  path: "/refund-policy",
+});
+
 type Props = {
   title: string;
   children: React.ReactNode;

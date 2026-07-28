@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getAllProducts } from "@/lib/catalog";
 import { ShopClient } from "@/components/ShopClient";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = pageMetadata({
+  title: "Shop All Vapes",
+  description:
+    "Browse disposable vapes, pods, devices and e-liquids from IGET, HQD, Al Fakher and more. Filter by brand and shop Australia's full catalogue.",
+  path: "/shop",
+});
 
 export default async function ShopPage() {
   const products = await getAllProducts();

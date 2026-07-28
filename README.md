@@ -79,3 +79,9 @@ ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='your-strong-password' npm run admin:
 ```
 
 Open `/admin/login`.
+
+## SEO
+
+Technical SEO (sitemap, robots, metadata, JSON-LD) is documented in [`docs/SEO.md`](docs/SEO.md).
+
+After deploy, submit `https://cloudsourceau.com/sitemap.xml` in Google Search Console.

@@ -5,15 +5,21 @@ import { ChevronDown } from "lucide-react";
 import { clsx } from "clsx";
 import { faqs } from "@/lib/site";
 
-export function FaqSection() {
+type FaqSectionProps = {
+  showHeading?: boolean;
+};
+
+export function FaqSection({ showHeading = true }: FaqSectionProps) {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <section className="container-site py-16">
-      <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-tight text-brand md:text-3xl">
-        FAQs: Aussie Cloud Vape
-      </h2>
-      <div className="mt-8 divide-y divide-border border-y border-border bg-surface">
+      {showHeading ? (
+        <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-tight text-brand md:text-3xl">
+          FAQs: Aussie Cloud Vape
+        </h2>
+      ) : null}
+      <div className={showHeading ? "mt-8 divide-y divide-border border-y border-border bg-surface" : "divide-y divide-border border-y border-border bg-surface"}>
         {faqs.map((faq, i) => {
           const isOpen = open === i;
           return (

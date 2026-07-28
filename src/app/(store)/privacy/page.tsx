@@ -1,3 +1,13 @@
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Privacy Policy",
+  description:
+    "How Aussie Cloud Vape collects and uses personal information for orders and customer support.",
+  path: "/privacy",
+});
+
 export default function PrivacyPage() {
   return (
     <div className="container-site max-w-3xl py-14 prose-shop">

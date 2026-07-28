@@ -4,6 +4,8 @@ import { AgeGate } from "@/components/AgeGate";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { VisitBeacon } from "@/components/VisitBeacon";
 import { TawkToChat } from "@/components/TawkToChat";
+import { JsonLd } from "@/components/JsonLd";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 
 export default function StoreLayout({
   children,
@@ -12,6 +14,7 @@ export default function StoreLayout({
 }) {
   return (
     <div className="flex min-h-dvh flex-1 flex-col">
+      <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
       <AgeGate />
       <VisitBeacon />
       <TawkToChat />

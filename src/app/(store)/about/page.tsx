@@ -1,3 +1,13 @@
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "About Us",
+  description:
+    "Learn about Aussie Cloud Vape, Australia's trusted online vape store for authentic disposables, pods, devices and e-liquids with nationwide delivery.",
+  path: "/about",
+});
+
 export default function AboutPage() {
   return (
     <div className="container-site max-w-3xl py-14 prose-shop">

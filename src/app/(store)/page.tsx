@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   getBestSellers,
   getFeaturedProducts,
@@ -11,8 +12,17 @@ import {
 } from "@/components/home/Banners";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { FaqSection } from "@/components/FaqSection";
+import { JsonLd } from "@/components/JsonLd";
+import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = pageMetadata({
+  title: "Buy Disposable Vapes Online Australia",
+  description:
+    "Shop authentic disposable vapes, pods, devices and e-liquids at Aussie Cloud Vape. Fast vape delivery Australia-wide with discreet packaging.",
+  path: "/",
+});
 
 export default async function HomePage() {
   const [featured, bestSellers, iget, alfakher, hqd, gunnpod, mrfog, alibarbar] =
@@ -29,6 +39,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={faqPageJsonLd()} />
       <Hero />
 
       <section className="container-site py-8 md:py-12">

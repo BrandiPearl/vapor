@@ -1,3 +1,13 @@
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Terms & Conditions",
+  description:
+    "Terms and conditions for shopping at Aussie Cloud Vape. Adult use only. Prices in AUD.",
+  path: "/terms",
+});
+
 export default function TermsPage() {
   return (
     <div className="container-site max-w-3xl py-14 prose-shop">
