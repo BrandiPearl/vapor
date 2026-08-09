@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Next 16 deprecates this file in favour of `proxy.ts`, but proxy always runs on
+// the Node.js runtime and @opennextjs/cloudflare rejects Node middleware, so the
+// Cloudflare build fails. Keep the edge middleware convention until OpenNext
+// supports it — the deprecation warning during the build is expected.
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 

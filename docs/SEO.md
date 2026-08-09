@@ -74,7 +74,7 @@ Do not keyword-stuff titles, headings, or FAQ answers. One clear intent per page
 
 ## Owner ops (post-deploy)
 
-1. Confirm Netlify custom domain and HTTPS
+1. Confirm the Cloudflare custom domain and HTTPS
 2. Add env vars if domain changes (`NEXT_PUBLIC_SITE_URL`)
 3. Submit sitemap in Search Console
 4. Monitor Coverage and Core Web Vitals monthly

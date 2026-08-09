@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "vapor",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // Self-reference used by the cache/revalidation handler.
+      // "service" must stay equal to "name" above.
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "vapor"
+    }
+  ],
+  "r2_buckets": [
+    {
+      // Create once before the first deploy:
+      //   npx wrangler r2 bucket create vapor-opennext-cache
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "vapor-opennext-cache"
+    }
+  ],
+  "images": {
+    // Powers next/image optimisation. If the account has no Images
+    // entitlement, drop this block: images are then served unoptimised.
+    "binding": "IMAGES"
+  }
+}

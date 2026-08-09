@@ -20,15 +20,30 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Netlify
+## Deploy on Cloudflare Workers
 
-1. Connect the GitHub repo `BrandiPearl/vapor` in Netlify.
-2. Build settings are in `netlify.toml` (Next.js plugin).
-3. Add environment variables from `.env.example` in **Site settings → Environment variables** (never commit `.env.local`).
-4. Point **cloudsourceau.com** DNS at Netlify:
-   - In Hostinger DNS, add Netlify’s nameservers **or**
-   - `A` / `CNAME` records Netlify shows for the custom domain
-5. In Netlify: **Domain management → Add domain → cloudsourceau.com** and follow HTTPS setup.
+The app runs on Cloudflare via [OpenNext](https://opennext.js.org/cloudflare) — plain
+`next build` output is not deployable there. Config lives in `wrangler.jsonc` and
+`open-next.config.ts`.
+
+1. Create the ISR cache bucket once: `npx wrangler r2 bucket create vapor-opennext-cache`.
+2. In the Worker's **Settings → Build**, set:
+   - Build command: `npm run cf:build`
+   - Deploy command: `npx opennextjs-cloudflare deploy` — it uploads the ISR cache
+     to R2 before running `wrangler deploy`; plain `wrangler deploy` skips that.
+3. Add every `NEXT_PUBLIC_*` value from `.env.example` under **Settings → Build →
+   build variables** — they are inlined at build time, so runtime variables are not
+   enough. Server-only values (`SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_S3_*`,
+   `OWNER_*`) belong in **Settings → Variables and Secrets** as *Secret*.
+4. Point **cloudsourceau.com** at the Worker under **Domains → Add custom domain**,
+   then update the Hostinger DNS records Cloudflare shows.
+
+Deploy from a local machine with `npm run cf:deploy`, or preview the built worker
+with `npm run cf:preview`.
+
+Note: `src/middleware.ts` stays on the deprecated Next 16 `middleware` convention
+on purpose. `proxy.ts` forces the Node.js runtime, which OpenNext Cloudflare
+rejects — the deprecation warning in the build log is expected.
 
 ## Checkout
 
@@ -43,7 +58,7 @@ NEXT_PUBLIC_WHATSAPP_NUMBER=61468292610
 1. Create a free property at [tawk.to](https://www.tawk.to/).
 2. Open **Administration → Channels → Chat Widget** and copy the embed URL path:
    `https://embed.tawk.to/{PROPERTY_ID}/{WIDGET_ID}`
-3. Add both IDs to `.env.local` and Netlify (rebuild after changing):
+3. Add both IDs to `.env.local` and the Cloudflare build variables (rebuild after changing):
 
 ```bash
 NEXT_PUBLIC_TAWK_PROPERTY_ID=6a669992f72ee51d4882401d
