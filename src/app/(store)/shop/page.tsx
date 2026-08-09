@@ -4,7 +4,9 @@ import { getAllProducts } from "@/lib/catalog";
 import { ShopClient } from "@/components/ShopClient";
 import { pageMetadata } from "@/lib/seo";
 
-export const revalidate = 60;
+// Prerendered at build time. The Cloudflare cache is read-only, so a positive
+// revalidate would re-render on every request without ever storing the result.
+export const revalidate = false;
 
 export const metadata: Metadata = pageMetadata({
   title: "Shop All Vapes",

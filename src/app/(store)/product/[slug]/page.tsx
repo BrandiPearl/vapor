@@ -22,7 +22,9 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export const revalidate = 60;
+// Prerendered at build time. The Cloudflare cache is read-only, so a positive
+// revalidate would re-render on every request without ever storing the result.
+export const revalidate = false;
 
 export async function generateStaticParams() {
   try {

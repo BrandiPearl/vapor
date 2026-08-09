@@ -16,13 +16,8 @@
       "service": "vapor"
     }
   ],
-  "r2_buckets": [
-    {
-      // Auto-created on first deploy; R2 must be enabled on the account.
-      "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "vapor-opennext-cache"
-    }
-  ],
+  // No incremental-cache binding: open-next.config.ts uses the read-only
+  // static-assets cache so the deploy needs no R2 bucket.
   "images": {
     // Powers next/image optimisation. If the account has no Images
     // entitlement, drop this block: images are then served unoptimised.

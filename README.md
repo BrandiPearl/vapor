@@ -26,21 +26,28 @@ The app runs on Cloudflare via [OpenNext](https://opennext.js.org/cloudflare) �
 `next build` output is not deployable there. Config lives in `wrangler.jsonc` and
 `open-next.config.ts`.
 
-1. Enable **R2 Object Storage** on the Cloudflare account (dashboard → R2). The
-   `vapor-opennext-cache` bucket is then created automatically on first deploy.
-2. In the Worker's **Settings → Build**, set:
+1. In the Worker's **Settings → Build**, set:
    - Build command: `npm run cf:build`
-   - Deploy command: `npx opennextjs-cloudflare deploy` — it uploads the ISR cache
-     to R2 before running `wrangler deploy`; plain `wrangler deploy` skips that.
-3. Add every `NEXT_PUBLIC_*` value from `.env.example` under **Settings → Build →
+   - Deploy command: `npx opennextjs-cloudflare deploy`
+2. Add every `NEXT_PUBLIC_*` value from `.env.example` under **Settings → Build →
    build variables** — they are inlined at build time, so runtime variables are not
    enough. Server-only values (`SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_S3_*`,
    `OWNER_*`) belong in **Settings → Variables and Secrets** as *Secret*.
-4. Point **cloudsourceau.com** at the Worker under **Domains → Add custom domain**,
+3. Point **cloudsourceau.com** at the Worker under **Domains → Add custom domain**,
    then update the Hostinger DNS records Cloudflare shows.
 
 Deploy from a local machine with `npm run cf:deploy`, or preview the built worker
 with `npm run cf:preview`.
+
+### Publishing catalogue changes
+
+The storefront is fully prerendered at build time and the Cloudflare cache is
+read-only, so **edits made in `/admin` do not appear on the live site until the
+Worker is rebuilt**. Trigger a new deployment from the Cloudflare dashboard (or
+run `npm run cf:deploy`) after changing products.
+
+Enabling R2 on the account removes this limitation — see the comment at the top
+of `open-next.config.ts` for the two-line switch back to on-demand revalidation.
 
 Note: `src/middleware.ts` stays on the deprecated Next 16 `middleware` convention
 on purpose. `proxy.ts` forces the Node.js runtime, which OpenNext Cloudflare
