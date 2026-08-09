@@ -26,7 +26,8 @@ The app runs on Cloudflare via [OpenNext](https://opennext.js.org/cloudflare) �
 `next build` output is not deployable there. Config lives in `wrangler.jsonc` and
 `open-next.config.ts`.
 
-1. Create the ISR cache bucket once: `npx wrangler r2 bucket create vapor-opennext-cache`.
+1. Enable **R2 Object Storage** on the Cloudflare account (dashboard → R2). The
+   `vapor-opennext-cache` bucket is then created automatically on first deploy.
 2. In the Worker's **Settings → Build**, set:
    - Build command: `npm run cf:build`
    - Deploy command: `npx opennextjs-cloudflare deploy` — it uploads the ISR cache

@@ -18,8 +18,7 @@
   ],
   "r2_buckets": [
     {
-      // Create once before the first deploy:
-      //   npx wrangler r2 bucket create vapor-opennext-cache
+      // Auto-created on first deploy; R2 must be enabled on the account.
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "vapor-opennext-cache"
     }
