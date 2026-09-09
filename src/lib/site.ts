@@ -36,6 +36,7 @@ export const faqs = [
 export const navLinks = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "Shop All" },
+  { href: "/nicotine-pouches", label: "Nicotine Pouches" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
   { href: "/account", label: "My account" },

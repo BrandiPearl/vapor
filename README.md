@@ -93,7 +93,10 @@ npm run products:normalize
 npm run products:import
 npm run products:migrate-images
 npm run products:strip-dashes
+npm run products:import-pouches   # ZYN / VELO / XQS / PABLO / KILLA → /nicotine-pouches
 ```
+
+Nicotine pouches use category `Nicotine Pouches` and are excluded from `/shop`. Browse them at `/nicotine-pouches`.
 
 ## Admin CMS
 

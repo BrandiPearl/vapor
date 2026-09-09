@@ -86,13 +86,20 @@ export default async function ProductPage({ params }: Props) {
     ? await getRelatedProducts(product.brand, product.id, 8)
     : [];
 
-  const categoryHref = `/shop?category=${encodeURIComponent(product.category)}`;
+  const isPouch =
+    product.category.toLowerCase() === "nicotine pouches";
+  const categoryHref = isPouch
+    ? `/nicotine-pouches${product.brand ? `?brand=${encodeURIComponent(product.brand)}` : ""}`
+    : `/shop?category=${encodeURIComponent(product.category)}`;
   const inStock = product.inStock !== false;
   const isRemote = product.image.startsWith("http");
 
   const breadcrumbs = [
     { name: "Home", path: "/" },
-    { name: product.category, path: categoryHref },
+    {
+      name: isPouch ? "Nicotine Pouches" : product.category,
+      path: isPouch ? "/nicotine-pouches" : categoryHref,
+    },
     { name: product.name, path: `/product/${product.slug}` },
   ];
 
@@ -200,7 +207,11 @@ export default async function ProductPage({ params }: Props) {
           <ProductCarousel
             products={related}
             title="Related products"
-            viewAllHref={`/shop?brand=${encodeURIComponent(product.brand)}`}
+            viewAllHref={
+              isPouch
+                ? `/nicotine-pouches?brand=${encodeURIComponent(product.brand)}`
+                : `/shop?brand=${encodeURIComponent(product.brand)}`
+            }
           />
         </div>
       )}

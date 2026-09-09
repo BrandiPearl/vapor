@@ -171,4 +171,28 @@ export async function getProductSlugs() {
   return slugs;
 }
 
+export const NICOTINE_POUCH_CATEGORY = "Nicotine Pouches";
+
+export function isNicotinePouch(product: Product) {
+  return product.category.toLowerCase() === NICOTINE_POUCH_CATEGORY.toLowerCase();
+}
+
+/** Vape catalogue only — excludes nicotine pouches. */
+export async function getVapeProducts() {
+  const all = await getAllProducts();
+  return all.filter((p) => !isNicotinePouch(p));
+}
+
+export async function getNicotinePouchProducts() {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_COLUMNS)
+    .eq("category_name", NICOTINE_POUCH_CATEGORY)
+    .order("brand", { ascending: true })
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return (data as DbProduct[]).map(mapDbProduct);
+}
+
 export { formatPrice } from "./site";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { getAllProducts } from "@/lib/catalog";
+import { getVapeProducts } from "@/lib/catalog";
 import { ShopClient } from "@/components/ShopClient";
 import { pageMetadata } from "@/lib/seo";
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function ShopPage() {
-  const products = await getAllProducts();
+  const products = await getVapeProducts();
 
   return (
     <Suspense

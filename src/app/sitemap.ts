@@ -5,6 +5,11 @@ import { SITE_URL } from "@/lib/seo";
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/`, changeFrequency: "daily", priority: 1 },
   { url: `${SITE_URL}/shop`, changeFrequency: "daily", priority: 0.9 },
+  {
+    url: `${SITE_URL}/nicotine-pouches`,
+    changeFrequency: "daily",
+    priority: 0.9,
+  },
   { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.6 },
   { url: `${SITE_URL}/contact`, changeFrequency: "monthly", priority: 0.6 },
   { url: `${SITE_URL}/faq`, changeFrequency: "monthly", priority: 0.7 },

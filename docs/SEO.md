@@ -34,6 +34,7 @@ Do not keyword-stuff titles, headings, or FAQ answers. One clear intent per page
 ## Phase B (content and growth)
 
 - Indexable brand/category landing pages (`/brand/iget`, `/category/disposables`)
+- Nicotine pouch product photography (currently placeholders until images are uploaded)
 - Expanded shipping, authenticity, and how-to-order pages
 - Guides/blog only when substantive (thin posts hurt rankings)
 - Image pipeline: optimize remote product images for LCP
