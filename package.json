@@ -15,6 +15,7 @@
     "products:normalize": "tsx scripts/normalize-products.ts",
     "products:import": "tsx scripts/import-products.ts",
     "products:import-pouches": "tsx scripts/import-nicotine-pouches.ts",
+    "products:scrape-pouches": "tsx scripts/scrape-nicotine-pouches.ts",
     "products:fetch-pouch-images": "tsx scripts/fetch-pouch-images.ts",
     "products:migrate-images": "tsx scripts/migrate-images.ts",
     "products:strip-dashes": "tsx scripts/strip-em-dashes.ts",

@@ -1,6 +1,6 @@
 /**
- * Fetch og:image from snusdownunder product pages for Nicotine Pouches,
- * download into Supabase Storage, and set image_url.
+ * Download nicotine pouch images from metadata.source_images into Supabase Storage.
+ * Skips products that already use our storage URL.
  *
  * Usage: npm run products:fetch-pouch-images
  */
@@ -18,7 +18,6 @@ const UA =
 type ProductRow = {
   id: string;
   slug: string;
-  name: string;
   image_url: string | null;
   metadata: Record<string, unknown> | null;
 };
@@ -67,7 +66,6 @@ function extractOgImage(html: string) {
   const patterns = [
     /property=["']og:image["']\s+content=["']([^"']+)["']/i,
     /content=["']([^"']+)["']\s+property=["']og:image["']/i,
-    /og:image["']\s+content=["']([^"']+)["']/i,
   ];
   for (const pat of patterns) {
     const m = html.match(pat);
@@ -85,6 +83,20 @@ async function download(url: string) {
   return Buffer.from(await res.arrayBuffer());
 }
 
+async function resolveSourceImage(product: ProductRow) {
+  const meta = (product.metadata || {}) as Record<string, unknown>;
+  const sources = Array.isArray(meta.source_images)
+    ? (meta.source_images as string[]).filter(Boolean)
+    : [];
+  if (sources[0]?.startsWith("http")) return sources[0];
+
+  const sourceUrl =
+    (typeof meta.source_url === "string" && meta.source_url) ||
+    `https://www.snusdownunder.com/products/${product.slug}/`;
+  const html = await fetchHtml(sourceUrl);
+  return extractOgImage(html);
+}
+
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -96,7 +108,7 @@ async function main() {
 
   const { data: products, error } = await supabase
     .from("products")
-    .select("id, slug, name, image_url, metadata")
+    .select("id, slug, image_url, metadata")
     .eq("category_name", "Nicotine Pouches")
     .order("brand")
     .order("name");
@@ -105,22 +117,22 @@ async function main() {
   console.log(`Found ${products!.length} nicotine pouches`);
 
   let ok = 0;
+  let skip = 0;
   let fail = 0;
 
   for (const product of products as ProductRow[]) {
-    const meta = (product.metadata || {}) as Record<string, unknown>;
-    const sourceUrl =
-      (typeof meta.source_url === "string" && meta.source_url) ||
-      `https://www.snusdownunder.com/product/${product.slug}/`;
+    if (product.image_url?.includes("supabase.co/storage")) {
+      skip++;
+      continue;
+    }
 
     try {
       process.stdout.write(`→ ${product.slug} ... `);
-      const html = await fetchHtml(sourceUrl);
-      const imageUrl = extractOgImage(html);
+      const imageUrl = await resolveSourceImage(product);
       if (!imageUrl) {
-        console.log("no og:image");
+        console.log("no image");
         fail++;
-        await sleep(400);
+        await sleep(300);
         continue;
       }
 
@@ -139,9 +151,8 @@ async function main() {
 
       const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
       const publicUrl = pub.publicUrl;
-
-      const nextMeta = {
-        ...meta,
+      const meta = {
+        ...(product.metadata || {}),
         source_images: [imageUrl],
         image_urls: [publicUrl],
         product_type: "nicotine_pouch",
@@ -152,22 +163,24 @@ async function main() {
         .update({
           image_url: publicUrl,
           image_path: path,
-          metadata: nextMeta,
+          metadata: meta,
+          in_stock: true,
+          stock_quantity: 50,
         })
         .eq("id", product.id);
       if (updErr) throw updErr;
 
       console.log("ok");
       ok++;
-      await sleep(500);
+      await sleep(250);
     } catch (err) {
       console.log("FAIL", err instanceof Error ? err.message : err);
       fail++;
-      await sleep(800);
+      await sleep(500);
     }
   }
 
-  console.log(`Done. ok=${ok} fail=${fail}`);
+  console.log(`Done. ok=${ok} skip=${skip} fail=${fail}`);
 }
 
 main().catch((err) => {
