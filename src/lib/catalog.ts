@@ -3,7 +3,7 @@ import type { DbProduct, Product } from "./types";
 
 const PLACEHOLDER = "/products/placeholder.svg";
 
-const PRODUCT_COLUMNS =
+export const PRODUCT_COLUMNS =
   "id, slug, name, brand, category_name, description, price, compare_at_price, image_url, puffs, on_sale, featured, best_seller, in_stock, metadata";
 
 export function createPublicClient() {

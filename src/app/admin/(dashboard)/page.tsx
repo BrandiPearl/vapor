@@ -3,8 +3,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function AdminHomePage() {
   const admin = createAdminClient();
-  const [{ count: total }, { count: onSale }, { count: outOfStock }] =
-    await Promise.all([
+  let total = 0;
+  let onSale = 0;
+  let outOfStock = 0;
+  try {
+    const [totalRes, onSaleRes, outOfStockRes] = await Promise.all([
       admin.from("products").select("*", { count: "exact", head: true }),
       admin
         .from("products")
@@ -15,6 +18,12 @@ export default async function AdminHomePage() {
         .select("*", { count: "exact", head: true })
         .eq("in_stock", false),
     ]);
+    total = totalRes.count ?? 0;
+    onSale = onSaleRes.count ?? 0;
+    outOfStock = outOfStockRes.count ?? 0;
+  } catch (err) {
+    console.error("admin dashboard counts", err);
+  }
 
   const cards = [
     { label: "Products", value: total ?? 0 },

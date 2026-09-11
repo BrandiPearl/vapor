@@ -11,11 +11,15 @@ import { makeSlug } from "@/lib/admin/utils";
 const BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "products";
 
 function revalidateStorefront(slug?: string) {
-  revalidatePath("/");
-  revalidatePath("/shop");
-  if (slug) revalidatePath(`/product/${slug}`);
-  revalidatePath("/admin");
-  revalidatePath("/admin/products");
+  const paths = ["/", "/shop", "/nicotine-pouches", "/admin", "/admin/products"];
+  if (slug) paths.push(`/product/${slug}`);
+  for (const path of paths) {
+    try {
+      revalidatePath(path);
+    } catch {
+      // Cloudflare static-assets cache is read-only; skip on-demand revalidation.
+    }
+  }
 }
 
 function parseProductForm(formData: FormData) {
@@ -53,7 +57,7 @@ async function uploadImage(file: File, slug: string) {
   if (!file || file.size === 0) return null;
 
   const admin = createAdminClient();
-  const bytes = Buffer.from(await file.arrayBuffer());
+  const bytes = new Uint8Array(await file.arrayBuffer());
   const ext = extname(file.name).toLowerCase() || ".jpg";
   const hash = createHash("sha1").update(bytes).digest("hex").slice(0, 10);
   const path = `${slug}/${Date.now()}-${hash}${ext}`;

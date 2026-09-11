@@ -1,9 +1,41 @@
 import Link from "next/link";
-import { getAllProducts } from "@/lib/catalog";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { mapDbProduct, PRODUCT_COLUMNS } from "@/lib/catalog";
+import type { DbProduct } from "@/lib/types";
 import { AdminProductTable } from "@/components/admin/AdminProductTable";
 
-export default async function AdminProductsPage() {
-  const products = await getAllProducts();
+function escapeIlike(value: string) {
+  return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
+type Props = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+export default async function AdminProductsPage({ searchParams }: Props) {
+  const { q = "" } = await searchParams;
+  const query = q.trim();
+  const admin = createAdminClient();
+
+  let request = admin
+    .from("products")
+    .select(PRODUCT_COLUMNS)
+    .order("name")
+    .limit(80);
+
+  if (query) {
+    const safe = escapeIlike(query);
+    request = request.or(
+      `name.ilike.%${safe}%,slug.ilike.%${safe}%,brand.ilike.%${safe}%`,
+    );
+  }
+
+  const { data, error } = await request;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const products = (data as DbProduct[]).map(mapDbProduct);
 
   return (
     <div>
@@ -13,7 +45,7 @@ export default async function AdminProductsPage() {
             Products
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Edit catalogue items and media stored in Supabase.
+            Search the catalogue, then open a product to edit price and media.
           </p>
         </div>
         <Link
@@ -23,7 +55,7 @@ export default async function AdminProductsPage() {
           Add product
         </Link>
       </div>
-      <AdminProductTable products={products} />
+      <AdminProductTable products={products} initialQuery={query} />
     </div>
   );
 }

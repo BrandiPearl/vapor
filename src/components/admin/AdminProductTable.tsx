@@ -3,11 +3,20 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import type { Product } from "@/lib/types";
 import { formatPrice } from "@/lib/site";
 
-export function AdminProductTable({ products }: { products: Product[] }) {
-  const [q, setQ] = useState("");
+export function AdminProductTable({
+  products,
+  initialQuery = "",
+}: {
+  products: Product[];
+  initialQuery?: string;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [q, setQ] = useState(initialQuery);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -20,19 +29,39 @@ export function AdminProductTable({ products }: { products: Product[] }) {
     );
   }, [products, q]);
 
+  const submitSearch = (value: string) => {
+    const next = value.trim();
+    const params = new URLSearchParams();
+    if (next) params.set("q", next);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  };
+
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <form
+        className="mb-4 flex flex-wrap items-center justify-between gap-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          submitSearch(q);
+        }}
+      >
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search products…"
+          placeholder="Search by name, brand, or slug…"
           className="w-full max-w-sm rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
         />
-        <p className="text-sm text-muted">
-          {filtered.length} / {products.length}
-        </p>
-      </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-soft"
+          >
+            Search
+          </button>
+          <p className="text-sm text-muted">{filtered.length} shown</p>
+        </div>
+      </form>
 
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-white px-6 py-16 text-center">
@@ -40,11 +69,14 @@ export function AdminProductTable({ products }: { products: Product[] }) {
             No products match your search
           </h2>
           <p className="mt-2 text-sm text-muted">
-            Try another keyword or clear the search box.
+            Search by product name to load matching rows from the database.
           </p>
           <button
             type="button"
-            onClick={() => setQ("")}
+            onClick={() => {
+              setQ("");
+              submitSearch("");
+            }}
             className="mt-5 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-soft"
           >
             Clear search
