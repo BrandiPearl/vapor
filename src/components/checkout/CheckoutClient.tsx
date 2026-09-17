@@ -73,6 +73,11 @@ export function CheckoutClient() {
   const [submitting, setSubmitting] = useState(false);
   const [channel, setChannel] = useState<OrderChannel>("whatsapp");
   const [sendHint, setSendHint] = useState<string | null>(null);
+  const [telegramHandoff, setTelegramHandoff] = useState<{
+    message: string;
+    url: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
   const { settings, loaded } = useSiteSettings();
 
   const shippingOptions = settings.shippingOptions;
@@ -98,6 +103,93 @@ export function CheckoutClient() {
     return (
       <div className="container-site flex min-h-[40vh] items-center justify-center py-20">
         <p className="text-sm text-muted">Loading checkout…</p>
+      </div>
+    );
+  }
+
+  if (telegramHandoff) {
+    return (
+      <div className="bg-[#e8efe9]">
+        <div className="container-site max-w-2xl py-10 md:py-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+            Order saved
+          </p>
+          <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight text-brand">
+            Copy your order, then open Telegram
+          </h1>
+          <p className="mt-3 text-sm text-muted">
+            Telegram cannot pre-fill a private chat. Copy the message below,
+            open our chat, paste it, and send.
+          </p>
+
+          <ol className="mt-6 list-decimal space-y-2 pl-5 text-sm text-foreground">
+            <li>Tap <strong>Copy order</strong> (you should see “Copied”).</li>
+            <li>Tap <strong>Open Telegram</strong>.</li>
+            <li>Paste in the chat (long-press → Paste, or Ctrl/Cmd+V) and send.</li>
+          </ol>
+
+          <textarea
+            readOnly
+            value={telegramHandoff.message}
+            rows={14}
+            className="mt-6 w-full rounded-xl border border-border bg-white p-4 font-mono text-xs leading-relaxed text-foreground outline-none focus:border-accent"
+            onFocus={(e) => e.currentTarget.select()}
+          />
+
+          {copied && (
+            <p className="mt-3 rounded-md bg-[#e8f7ef] px-4 py-3 text-center text-sm font-semibold text-accent">
+              Copied — now open Telegram and paste.
+            </p>
+          )}
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(telegramHandoff.message);
+                  setCopied(true);
+                } catch {
+                  // Fallback: select the textarea so the user can copy manually.
+                  const area = document.querySelector<HTMLTextAreaElement>(
+                    "textarea",
+                  );
+                  area?.focus();
+                  area?.select();
+                  setCopied(false);
+                  alert(
+                    "Clipboard blocked. The order text is selected — press Ctrl/Cmd+C to copy.",
+                  );
+                }
+              }}
+              className="inline-flex flex-1 items-center justify-center rounded-md bg-brand px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-white hover:bg-brand-soft"
+            >
+              {copied ? "Copied ✓" : "Copy order"}
+            </button>
+            <a
+              href={telegramHandoff.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-brand bg-white px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-brand hover:bg-[#e8f7ef]"
+            >
+              <Send className="h-4 w-4" />
+              Open Telegram
+            </a>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-muted">
+            Your order is already saved on our side. WhatsApp and Email still
+            pre-fill automatically if you prefer those channels next time.
+          </p>
+          <div className="mt-4 text-center">
+            <Link
+              href="/shop"
+              className="text-sm font-semibold text-accent hover:underline"
+            >
+              Continue shopping
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -212,10 +304,10 @@ export function CheckoutClient() {
     setSubmitting(true);
     setSendHint(null);
 
-    // Open during the click gesture so popup blockers do not swallow the tab
-    // after the async order save. mailto: stays in the same gesture window.
+    // WhatsApp needs a window opened during the click gesture. Telegram stays
+    // on this page so the customer can copy, then open chat themselves.
     const chatWindow =
-      channel === "email" ? null : window.open("about:blank", "_blank");
+      channel === "whatsapp" ? window.open("about:blank", "_blank") : null;
 
     try {
       const res = await fetch("/api/orders", {
@@ -240,25 +332,22 @@ export function CheckoutClient() {
       }
 
       if (channel === "telegram") {
-        try {
-          await navigator.clipboard.writeText(message);
-          setSendHint(
-            "Order copied. Paste it into the Telegram chat (Ctrl/Cmd+V), then send.",
-          );
-        } catch {
-          setSendHint(
-            "Telegram opened. Copy the order from your cart confirmation if paste is empty.",
-          );
-        }
-      } else if (channel === "email") {
-        setSendHint(
-          `Your email app will open with the order to ${settings.orderEmail}. Hit Send to place it.`,
-        );
+        clearCart();
+        setCopied(false);
+        setTelegramHandoff({ message, url });
+        return;
       }
 
       if (channel === "email") {
+        setSendHint(
+          `Your email app will open with the order to ${settings.orderEmail}. Hit Send to place it.`,
+        );
         window.location.href = url;
-      } else if (chatWindow && !chatWindow.closed) {
+        clearCart();
+        return;
+      }
+
+      if (chatWindow && !chatWindow.closed) {
         chatWindow.location.href = url;
       } else {
         window.location.assign(url);
@@ -268,6 +357,11 @@ export function CheckoutClient() {
       setError(
         "Could not save your order on the server. Opening so you can still send it.",
       );
+      if (channel === "telegram") {
+        setCopied(false);
+        setTelegramHandoff({ message, url });
+        return;
+      }
       if (channel === "email") {
         window.location.href = url;
       } else if (chatWindow && !chatWindow.closed) {
@@ -671,7 +765,7 @@ export function CheckoutClient() {
               </div>
               <p className="mt-2 text-xs text-muted">
                 {channel === "telegram"
-                  ? "Opens our Telegram chat and copies the order so you can paste and send it."
+                  ? "Saves your order, then shows it here so you can copy and paste into Telegram."
                   : channel === "email"
                     ? `Opens your email app with the order addressed to ${settings.orderEmail}.`
                     : "Opens WhatsApp with your order details filled in."}
@@ -692,7 +786,9 @@ export function CheckoutClient() {
               )}
               {submitting
                 ? "Saving order…"
-                : `Place order on ${channelLabel(channel)} ${formatPrice(total)}`}
+                : channel === "telegram"
+                  ? `Save order for Telegram ${formatPrice(total)}`
+                  : `Place order on ${channelLabel(channel)} ${formatPrice(total)}`}
               <Lock className="h-3.5 w-3.5 opacity-80" />
             </button>
             {sendHint && (
