@@ -243,11 +243,11 @@ export function CheckoutClient() {
         try {
           await navigator.clipboard.writeText(message);
           setSendHint(
-            "Order copied. In Telegram, choose our chat and send the pre-filled message (or paste if needed).",
+            "Order copied. Paste it into the Telegram chat (Ctrl/Cmd+V), then send.",
           );
         } catch {
           setSendHint(
-            "Telegram will open with your order ready — choose our chat and tap Send.",
+            "Telegram opened. Copy the order from your cart confirmation if paste is empty.",
           );
         }
       } else if (channel === "email") {
@@ -671,7 +671,7 @@ export function CheckoutClient() {
               </div>
               <p className="mt-2 text-xs text-muted">
                 {channel === "telegram"
-                  ? "Opens Telegram with your full order ready to send — pick our chat and tap Send."
+                  ? "Opens our Telegram chat and copies the order so you can paste and send it."
                   : channel === "email"
                     ? `Opens your email app with the order addressed to ${settings.orderEmail}.`
                     : "Opens WhatsApp with your order details filled in."}

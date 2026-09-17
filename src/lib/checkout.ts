@@ -76,13 +76,6 @@ export function normalizeWhatsAppPhone(raw: string) {
   return digits;
 }
 
-function telegramUsernameFromUrl(url: string) {
-  const match = url.match(/t\.me\/([A-Za-z0-9_]+)/i);
-  const handle = match?.[1];
-  if (!handle || /^(share|joinchat|addstickers)$/i.test(handle)) return null;
-  return handle;
-}
-
 export function buildOrderMessage(input: {
   form: CheckoutFormData;
   items: CartLine[];
@@ -175,33 +168,21 @@ export function buildWhatsAppUrl(message: string, number: string) {
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
-/**
- * Telegram cannot prefill a DM to a username. The share composer is the only
- * URL that carries the order text — customer picks our chat and hits send.
- */
-export function buildTelegramOrderUrl(message: string, telegramUrl: string) {
-  const handle = telegramUsernameFromUrl(telegramUrl);
-  const body = handle
-    ? `Please send this order to @${handle}\n\n${message}`
-    : message;
-  return `https://t.me/share/url?text=${encodeURIComponent(body)}`;
-}
-
 export function buildEmailOrderUrl(message: string, orderEmail: string) {
   const subject = "New order - Aussie Cloud Vape";
-  // mailto bodies must stay relatively short; keep plain text.
   return `mailto:${encodeURIComponent(orderEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
 }
 
 export type OrderChannel = "whatsapp" | "telegram" | "email";
 
+/** Opens the store Telegram chat. Message must be pasted — Telegram blocks DM prefills. */
 export function buildOrderChatUrl(
   channel: OrderChannel,
   message: string,
   settings: SiteSettings,
 ) {
   if (channel === "telegram") {
-    return buildTelegramOrderUrl(message, settings.telegramUrl);
+    return settings.telegramUrl;
   }
   if (channel === "email") {
     return buildEmailOrderUrl(message, settings.orderEmail);
