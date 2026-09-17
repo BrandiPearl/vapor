@@ -7,6 +7,7 @@ import { logoutAction } from "@/lib/admin/auth-actions";
 
 const links = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/orders", label: "Orders" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/products/new", label: "Add product" },
   { href: "/admin/settings", label: "Settings" },
