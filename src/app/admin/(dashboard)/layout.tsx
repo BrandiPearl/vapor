@@ -1,7 +1,11 @@
 import { AdminNav } from "@/components/admin/AdminNav";
 import { AdminNotice } from "@/components/admin/AdminNotice";
 import { requireAdmin } from "@/lib/admin/auth";
-import { hasServiceRoleKey, SERVICE_ROLE_HELP } from "@/lib/supabase/admin";
+import {
+  describeRuntimeEnv,
+  hasServiceRoleKey,
+  SERVICE_ROLE_HELP,
+} from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +23,7 @@ export default async function AdminDashboardLayout({
         {!hasServiceRoleKey() && (
           <AdminNotice
             title="Read-only mode: saving products will fail."
-            detail={SERVICE_ROLE_HELP}
+            detail={`${SERVICE_ROLE_HELP} ${describeRuntimeEnv()}`}
           />
         )}
         {children}

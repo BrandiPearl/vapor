@@ -15,6 +15,21 @@ export function hasServiceRoleKey() {
   );
 }
 
+/**
+ * Names only — never values. Lets an admin see whether the Worker was handed
+ * the binding at all, which distinguishes "secret not applied to this version"
+ * from "app cannot read it".
+ */
+export function describeRuntimeEnv() {
+  const names = Object.keys(process.env)
+    .filter((key) => /^(SUPABASE_|NEXT_PUBLIC_|OWNER_)/.test(key))
+    .sort();
+
+  return names.length
+    ? `Worker sees: ${names.join(", ")}`
+    : "Worker sees no Supabase-related environment variables.";
+}
+
 /** Server-only admin client. Never import this into client components. */
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
