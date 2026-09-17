@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyOwner } from "@/lib/notify-owner";
 import { formatPrice } from "@/lib/site";
-import { MIN_ORDER_SUBTOTAL, meetsMinimumOrder } from "@/lib/checkout";
+import { meetsMinimumOrder } from "@/lib/settings";
+import { getSiteSettings } from "@/lib/settings-server";
 
 type OrderBody = {
   form: {
@@ -52,10 +53,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!meetsMinimumOrder(subtotal)) {
+    const { minOrderSubtotal } = await getSiteSettings();
+    if (!meetsMinimumOrder(subtotal, minOrderSubtotal)) {
       return NextResponse.json(
         {
-          error: `Minimum order is ${formatPrice(MIN_ORDER_SUBTOTAL)}. Add more items to continue.`,
+          error: `Minimum order is ${formatPrice(minOrderSubtotal)}. Add more items to continue.`,
         },
         { status: 400 },
       );

@@ -2,12 +2,16 @@
 
 import { FormEvent, useState } from "react";
 import { MapPin, MessageCircle, Send } from "lucide-react";
-import { TELEGRAM_URL, getWhatsAppContactUrl } from "@/lib/site";
+import { getWhatsAppContactUrl } from "@/lib/site";
+import { useSiteSettings } from "@/components/SettingsProvider";
 
 export default function ContactClient() {
   const [sent, setSent] = useState(false);
+  const { settings } = useSiteSettings();
+  const telegramUrl = settings.telegramUrl;
   const whatsappUrl = getWhatsAppContactUrl(
     "Hi Aussie Cloud Vape, I have a question.",
+    settings.whatsappNumber,
   );
 
   const onSubmit = (e: FormEvent) => {
@@ -28,7 +32,7 @@ export default function ContactClient() {
           <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
             Reach us on WhatsApp or{" "}
             <a
-              href={TELEGRAM_URL}
+              href={telegramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-accent hover:underline"
@@ -60,7 +64,7 @@ export default function ContactClient() {
             <li className="flex items-center gap-3">
               <Send className="h-4 w-4 text-accent" />
               <a
-                href={TELEGRAM_URL}
+                href={telegramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-accent hover:underline"
@@ -83,7 +87,7 @@ export default function ContactClient() {
               </a>
             )}
             <a
-              href={TELEGRAM_URL}
+              href={telegramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-md border border-brand bg-white px-5 py-3 text-sm font-bold uppercase tracking-wider text-brand transition hover:bg-[#e8f7ef]"

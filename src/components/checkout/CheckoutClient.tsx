@@ -16,19 +16,21 @@ import {
 } from "@/lib/cart-store";
 import {
   AU_STATES,
-  MIN_ORDER_SUBTOTAL,
   PAYMENT_OPTIONS,
-  SHIPPING_OPTIONS,
   buildOrderChatUrl,
   buildWhatsAppOrderMessage,
   getShippingPrice,
-  meetsMinimumOrder,
-  minimumOrderShortfall,
   type CheckoutFormData,
   type OrderChannel,
   type PaymentId,
   type ShippingId,
 } from "@/lib/checkout";
+import {
+  meetsMinimumOrder,
+  minimumOrderShortfall,
+  resolveShippingOption,
+} from "@/lib/settings";
+import { useSiteSettings } from "@/components/SettingsProvider";
 import { clsx } from "clsx";
 const initialForm: CheckoutFormData = {
   email: "",
@@ -70,11 +72,16 @@ export function CheckoutClient() {
   const [submitting, setSubmitting] = useState(false);
   const [channel, setChannel] = useState<OrderChannel>("whatsapp");
   const [telegramHint, setTelegramHint] = useState(false);
+  const { settings, loaded } = useSiteSettings();
 
-  const shippingPrice = getShippingPrice(form.shipping);
+  const shippingOptions = settings.shippingOptions;
+  const minimum = settings.minOrderSubtotal;
+  // The saved option can disappear if the owner edits shipping mid-session.
+  const selectedShipping = resolveShippingOption(shippingOptions, form.shipping);
+  const shippingPrice = getShippingPrice(shippingOptions, form.shipping);
   const total = subtotal + shippingPrice;
-  const canPlaceOrder = meetsMinimumOrder(subtotal);
-  const shortfall = minimumOrderShortfall(subtotal);
+  const canPlaceOrder = meetsMinimumOrder(subtotal, minimum);
+  const shortfall = minimumOrderShortfall(subtotal, minimum);
 
   const set =
     (key: keyof CheckoutFormData) =>
@@ -86,7 +93,7 @@ export function CheckoutClient() {
       setForm((f) => ({ ...f, [key]: value }));
     };
 
-  if (!hasHydrated) {
+  if (!hasHydrated || !loaded) {
     return (
       <div className="container-site flex min-h-[40vh] items-center justify-center py-20">
         <p className="text-sm text-muted">Loading checkout…</p>
@@ -118,7 +125,7 @@ export function CheckoutClient() {
     return (
       <div className="container-site flex min-h-[50vh] flex-col items-center justify-center py-20 text-center">
         <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-brand">
-          Minimum order {formatPrice(MIN_ORDER_SUBTOTAL)}
+          Minimum order {formatPrice(minimum)}
         </h1>
         <p className="mt-3 max-w-md text-sm text-muted">
           Your cart is {formatPrice(subtotal)}. Add{" "}
@@ -146,9 +153,9 @@ export function CheckoutClient() {
     e.preventDefault();
     setError(null);
 
-    if (!meetsMinimumOrder(subtotal)) {
+    if (!meetsMinimumOrder(subtotal, minimum)) {
       setError(
-        `Minimum order is ${formatPrice(MIN_ORDER_SUBTOTAL)}. Add ${formatPrice(minimumOrderShortfall(subtotal))} more.`,
+        `Minimum order is ${formatPrice(minimum)}. Add ${formatPrice(minimumOrderShortfall(subtotal, minimum))} more.`,
       );
       return;
     }
@@ -186,14 +193,19 @@ export function CheckoutClient() {
       }
     }
 
+    const orderForm: CheckoutFormData = {
+      ...form,
+      shipping: selectedShipping?.id ?? form.shipping,
+    };
     const message = buildWhatsAppOrderMessage({
-      form,
+      form: orderForm,
       items,
       subtotal,
       shippingPrice,
       total,
+      shippingOptions,
     });
-    const url = buildOrderChatUrl(channel, message);
+    const url = buildOrderChatUrl(channel, message, settings);
 
     setSubmitting(true);
     setTelegramHint(false);
@@ -207,7 +219,7 @@ export function CheckoutClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          form,
+          form: orderForm,
           items,
           subtotal,
           shippingPrice,
@@ -506,12 +518,12 @@ export function CheckoutClient() {
                 Shipping
               </h2>
               <div className="mt-4 space-y-2">
-                {SHIPPING_OPTIONS.map((opt) => (
+                {shippingOptions.map((opt) => (
                   <label
                     key={opt.id}
                     className={clsx(
                       "flex cursor-pointer items-center justify-between gap-3 rounded-md border bg-white px-4 py-3 text-sm transition",
-                      form.shipping === opt.id
+                      selectedShipping?.id === opt.id
                         ? "border-accent ring-1 ring-accent/30"
                         : "border-border",
                     )}
@@ -520,7 +532,7 @@ export function CheckoutClient() {
                       <input
                         type="radio"
                         name="shipping"
-                        checked={form.shipping === opt.id}
+                        checked={selectedShipping?.id === opt.id}
                         onChange={() =>
                           setForm((f) => ({
                             ...f,
@@ -731,11 +743,7 @@ export function CheckoutClient() {
               <div className="flex justify-between gap-4">
                 <span className="text-muted">Shipping</span>
                 <span className="text-right font-medium">
-                  {
-                    SHIPPING_OPTIONS.find((o) => o.id === form.shipping)
-                      ?.label
-                  }
-                  : {formatPrice(shippingPrice)}
+                  {selectedShipping?.label}: {formatPrice(shippingPrice)}
                 </span>
               </div>
               <div className="flex justify-between border-t border-border pt-3 text-base">

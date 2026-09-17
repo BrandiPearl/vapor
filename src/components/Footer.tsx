@@ -1,15 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  footerLinks,
-  navLinks,
-  TELEGRAM_URL,
-  getWhatsAppContactUrl,
-} from "@/lib/site";
+import { footerLinks, navLinks } from "@/lib/site";
+import { ContactLinks } from "@/components/ContactLinks";
 
 export function Footer() {
-  const whatsappUrl = getWhatsAppContactUrl();
-
   return (
     <footer className="mt-auto border-t border-border bg-brand text-white">
       <div className="container-site grid gap-10 py-14 md:grid-cols-3">
@@ -70,24 +64,7 @@ export function Footer() {
             <p className="text-sm font-semibold uppercase tracking-wider text-white/50">
               Contact
             </p>
-            {whatsappUrl && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 block text-sm text-white/80 hover:text-white"
-              >
-                WhatsApp
-              </a>
-            )}
-            <a
-              href={TELEGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1.5 block text-sm text-white/80 hover:text-white"
-            >
-              Telegram
-            </a>
+            <ContactLinks />
           </div>
         </div>
       </div>

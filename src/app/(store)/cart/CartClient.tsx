@@ -10,11 +10,8 @@ import {
 } from "@/lib/cart-store";
 import { QtyStepper } from "@/components/cart/QtyStepper";
 import { RemoveFromCartButton } from "@/components/cart/RemoveFromCartButton";
-import {
-  MIN_ORDER_SUBTOTAL,
-  meetsMinimumOrder,
-  minimumOrderShortfall,
-} from "@/lib/checkout";
+import { meetsMinimumOrder, minimumOrderShortfall } from "@/lib/settings";
+import { useSiteSettings } from "@/components/SettingsProvider";
 import { clsx } from "clsx";
 
 export default function CartClient() {
@@ -25,10 +22,12 @@ export default function CartClient() {
   const clearCart = useCart((s) => s.clearCart);
   const total = useCart(selectCartSubtotal);
   const count = useCart(selectCartCount);
-  const canCheckout = meetsMinimumOrder(total);
-  const shortfall = minimumOrderShortfall(total);
+  const { settings, loaded } = useSiteSettings();
+  const minimum = settings.minOrderSubtotal;
+  const canCheckout = meetsMinimumOrder(total, minimum);
+  const shortfall = minimumOrderShortfall(total, minimum);
 
-  if (!hasHydrated) {
+  if (!hasHydrated || !loaded) {
     return (
       <div className="container-site flex min-h-[40vh] items-center justify-center py-20">
         <p className="text-sm text-muted">Loading cart…</p>
@@ -145,7 +144,7 @@ export default function CartClient() {
           </div>
           {!canCheckout && (
             <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-950">
-              Minimum order is {formatPrice(MIN_ORDER_SUBTOTAL)}. Add{" "}
+              Minimum order is {formatPrice(minimum)}. Add{" "}
               {formatPrice(shortfall)} more to check out.
             </p>
           )}
@@ -167,7 +166,7 @@ export default function CartClient() {
           <p className="mt-2 text-center text-xs text-muted">
             {canCheckout
               ? "Checkout opens WhatsApp or Telegram with your order. No payments on this site."
-              : `Orders under ${formatPrice(MIN_ORDER_SUBTOTAL)} cannot be placed.`}
+              : `Orders under ${formatPrice(minimum)} cannot be placed.`}
           </p>
           <Link
             href="/shop"

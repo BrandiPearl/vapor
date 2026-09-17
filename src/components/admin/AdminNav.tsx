@@ -9,6 +9,7 @@ const links = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/products/new", label: "Add product" },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
 export function AdminNav({ email }: { email?: string | null }) {

@@ -1,5 +1,10 @@
 import { formatPrice } from "@/lib/site";
 import type { CartLine } from "@/lib/cart-store";
+import {
+  resolveShippingOption,
+  type ShippingOption,
+  type SiteSettings,
+} from "@/lib/settings";
 
 export const AU_STATES = [
   "Australian Capital Territory",
@@ -12,20 +17,8 @@ export const AU_STATES = [
   "Western Australia",
 ] as const;
 
-export const SHIPPING_OPTIONS = [
-  {
-    id: "standard" as const,
-    label: "Standard Shipping",
-    price: 20,
-  },
-  {
-    id: "express" as const,
-    label: "Express Shipping",
-    price: 35,
-  },
-] as const;
-
-export type ShippingId = (typeof SHIPPING_OPTIONS)[number]["id"];
+/** Shipping options are editable in /admin/settings, so this is a plain id. */
+export type ShippingId = string;
 
 export const PAYMENT_OPTIONS = [
   {
@@ -67,19 +60,8 @@ export type CheckoutFormData = {
   coupon: string;
 };
 
-export function getShippingPrice(id: ShippingId) {
-  return SHIPPING_OPTIONS.find((o) => o.id === id)?.price ?? 0;
-}
-
-/** Minimum cart subtotal (items only, before shipping) required to place an order. */
-export const MIN_ORDER_SUBTOTAL = 129;
-
-export function meetsMinimumOrder(subtotal: number) {
-  return subtotal >= MIN_ORDER_SUBTOTAL;
-}
-
-export function minimumOrderShortfall(subtotal: number) {
-  return Math.max(0, MIN_ORDER_SUBTOTAL - subtotal);
+export function getShippingPrice(options: ShippingOption[], id: ShippingId) {
+  return resolveShippingOption(options, id)?.price ?? 0;
 }
 
 /**
@@ -94,22 +76,17 @@ export function normalizeWhatsAppPhone(raw: string) {
   return digits;
 }
 
-export function getWhatsAppNumber() {
-  return normalizeWhatsAppPhone(
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "61468292610",
-  );
-}
-
 export function buildWhatsAppOrderMessage(input: {
   form: CheckoutFormData;
   items: CartLine[];
   subtotal: number;
   shippingPrice: number;
   total: number;
+  shippingOptions: ShippingOption[];
 }) {
-  const { form, items, subtotal, shippingPrice, total } = input;
+  const { form, items, subtotal, shippingPrice, total, shippingOptions } = input;
   const shippingLabel =
-    SHIPPING_OPTIONS.find((o) => o.id === form.shipping)?.label ?? "Shipping";
+    resolveShippingOption(shippingOptions, form.shipping)?.label ?? "Shipping";
   const paymentLabel =
     PAYMENT_OPTIONS.find((o) => o.id === form.payment)?.label ?? "Payment";
 
@@ -168,27 +145,20 @@ export function buildWhatsAppOrderMessage(input: {
   return lines.filter((l) => l !== null).join("\n");
 }
 
-export function buildWhatsAppUrl(message: string) {
-  const phone = getWhatsAppNumber();
+export function buildWhatsAppUrl(message: string, number: string) {
+  const phone = normalizeWhatsAppPhone(number);
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-}
-
-/** Opens Telegram chat with Declan (@garyb300). Prefills via share text when possible. */
-export function getTelegramUrl() {
-  return (
-    process.env.NEXT_PUBLIC_TELEGRAM_URL?.trim() || "https://t.me/garyb300"
-  );
-}
-
-export function buildTelegramOrderUrl(_message: string) {
-  // Direct chat with @garyb300; order text is copied in the checkout UI.
-  return getTelegramUrl();
 }
 
 export type OrderChannel = "whatsapp" | "telegram";
 
-export function buildOrderChatUrl(channel: OrderChannel, message: string) {
+/** Telegram has no prefill for direct chats; the UI copies the order instead. */
+export function buildOrderChatUrl(
+  channel: OrderChannel,
+  message: string,
+  settings: SiteSettings,
+) {
   return channel === "telegram"
-    ? buildTelegramOrderUrl(message)
-    : buildWhatsAppUrl(message);
+    ? settings.telegramUrl
+    : buildWhatsAppUrl(message, settings.whatsappNumber);
 }

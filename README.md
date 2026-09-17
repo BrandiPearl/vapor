@@ -58,6 +58,18 @@ Note: `src/middleware.ts` stays on the deprecated Next 16 `middleware` conventio
 on purpose. `proxy.ts` forces the Node.js runtime, which OpenNext Cloudflare
 rejects — the deprecation warning in the build log is expected.
 
+## Store settings
+
+Minimum order, shipping options, WhatsApp/Telegram links, and the announcement
+banner are edited at `/admin/settings` and stored in Supabase. Run
+`supabase/schema-settings.sql` once to create the table.
+
+These are the only values that change **without** a redeploy: the storefront
+reads them from `/api/settings` at runtime, so a save is live within a minute.
+Until the table exists (or if the read fails) the site falls back to the
+compiled defaults in `src/lib/settings.ts`, which in turn fall back to the
+`NEXT_PUBLIC_WHATSAPP_NUMBER` / `NEXT_PUBLIC_TELEGRAM_URL` env vars.
+
 ## Checkout
 
 Orders open WhatsApp and are saved to Supabase (`orders`). Run `supabase/schema-orders-visits.sql` once.
