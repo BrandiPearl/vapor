@@ -83,7 +83,7 @@ export function buildOrderMessage(input: {
   shippingPrice: number;
   total: number;
   shippingOptions: ShippingOption[];
-  /** When true, wrap emphasis in * for WhatsApp/Telegram markdown. */
+  /** When true, wrap emphasis in * for WhatsApp markdown. Off for Telegram/Email paste. */
   rich?: boolean;
 }) {
   const {

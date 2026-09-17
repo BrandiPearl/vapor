@@ -297,7 +297,7 @@ export function CheckoutClient() {
       shippingPrice,
       total,
       shippingOptions,
-      rich: channel !== "email",
+      rich: channel === "whatsapp",
     });
     const url = buildOrderChatUrl(channel, message, settings);
 
