@@ -38,6 +38,11 @@ The app runs on Cloudflare via [OpenNext](https://opennext.js.org/cloudflare) �
    readable by the running Worker. `SUPABASE_SERVICE_ROLE_KEY` is the common
    miss — without it `/admin` falls back to read-only mode (and shows a banner
    saying so), and `/api/orders` cannot record orders.
+
+   Runtime values must be added as **Secret**, not Variable. `wrangler deploy`
+   (which every Workers build runs) deletes all plaintext vars and re-applies
+   only those in `wrangler.jsonc`, so a dashboard Variable disappears on the
+   next deploy. Secrets are never removed by a deployment.
 3. Point **cloudsourceau.com** at the Worker under **Domains → Add custom domain**,
    then update the Hostinger DNS records Cloudflare shows.
 
