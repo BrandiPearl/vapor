@@ -572,8 +572,8 @@ export function CheckoutClient() {
                 Payment
               </h2>
               <p className="mt-1 text-sm text-muted">
-                Choose how you prefer to pay. Details are arranged on WhatsApp
-                or Telegram.
+                Choose how you prefer to pay. Details are arranged after you
+                send the order.
               </p>
               <div className="mt-4 space-y-2">
                 {PAYMENT_OPTIONS.map((opt) => (
