@@ -165,7 +165,7 @@ export default function CartClient() {
           )}
           <p className="mt-2 text-center text-xs text-muted">
             {canCheckout
-              ? "Checkout opens WhatsApp or Telegram with your order. No payments on this site."
+              ? "Checkout opens WhatsApp, Telegram, or Email with your order. No payments on this site."
               : `Orders under ${formatPrice(minimum)} cannot be placed.`}
           </p>
           <Link

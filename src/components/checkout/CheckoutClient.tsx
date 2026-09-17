@@ -7,7 +7,7 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-import { Lock, MessageCircle, Send } from "lucide-react";
+import { Lock, Mail, MessageCircle, Send } from "lucide-react";
 import { formatPrice } from "@/lib/site";
 import {
   selectCartCount,
@@ -18,7 +18,8 @@ import {
   AU_STATES,
   PAYMENT_OPTIONS,
   buildOrderChatUrl,
-  buildWhatsAppOrderMessage,
+  buildOrderMessage,
+  channelLabel,
   getShippingPrice,
   type CheckoutFormData,
   type OrderChannel,
@@ -71,7 +72,7 @@ export function CheckoutClient() {
   const [couponNote, setCouponNote] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [channel, setChannel] = useState<OrderChannel>("whatsapp");
-  const [telegramHint, setTelegramHint] = useState(false);
+  const [sendHint, setSendHint] = useState<string | null>(null);
   const { settings, loaded } = useSiteSettings();
 
   const shippingOptions = settings.shippingOptions;
@@ -197,22 +198,24 @@ export function CheckoutClient() {
       ...form,
       shipping: selectedShipping?.id ?? form.shipping,
     };
-    const message = buildWhatsAppOrderMessage({
+    const message = buildOrderMessage({
       form: orderForm,
       items,
       subtotal,
       shippingPrice,
       total,
       shippingOptions,
+      rich: channel !== "email",
     });
     const url = buildOrderChatUrl(channel, message, settings);
 
     setSubmitting(true);
-    setTelegramHint(false);
+    setSendHint(null);
 
-    // Open during the click gesture so popup blockers do not swallow the chat tab
-    // after the async order save.
-    const chatWindow = window.open("about:blank", "_blank");
+    // Open during the click gesture so popup blockers do not swallow the tab
+    // after the async order save. mailto: stays in the same gesture window.
+    const chatWindow =
+      channel === "email" ? null : window.open("about:blank", "_blank");
 
     try {
       const res = await fetch("/api/orders", {
@@ -225,26 +228,37 @@ export function CheckoutClient() {
           shippingPrice,
           total,
           whatsappMessage: message,
+          channel,
         }),
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
         setError(
           data.error ||
-            "Order could not be saved on the server, but you can still send it in chat.",
+            "Order could not be saved on the server, but you can still send it.",
         );
       }
 
       if (channel === "telegram") {
         try {
           await navigator.clipboard.writeText(message);
-          setTelegramHint(true);
+          setSendHint(
+            "Order copied. In Telegram, choose our chat and send the pre-filled message (or paste if needed).",
+          );
         } catch {
-          // clipboard may be blocked; still open Telegram
+          setSendHint(
+            "Telegram will open with your order ready — choose our chat and tap Send.",
+          );
         }
+      } else if (channel === "email") {
+        setSendHint(
+          `Your email app will open with the order to ${settings.orderEmail}. Hit Send to place it.`,
+        );
       }
 
-      if (chatWindow && !chatWindow.closed) {
+      if (channel === "email") {
+        window.location.href = url;
+      } else if (chatWindow && !chatWindow.closed) {
         chatWindow.location.href = url;
       } else {
         window.location.assign(url);
@@ -252,9 +266,11 @@ export function CheckoutClient() {
       clearCart();
     } catch {
       setError(
-        "Could not save your order on the server. Opening chat so you can still send it.",
+        "Could not save your order on the server. Opening so you can still send it.",
       );
-      if (chatWindow && !chatWindow.closed) {
+      if (channel === "email") {
+        window.location.href = url;
+      } else if (chatWindow && !chatWindow.closed) {
         chatWindow.location.href = url;
       } else {
         window.location.assign(url);
@@ -276,8 +292,8 @@ export function CheckoutClient() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
             No card payments on this site. Complete your details, then send the
-            order on WhatsApp or Telegram so our team can confirm and share
-            payment instructions.
+            order on WhatsApp, Telegram, or Email so our team can confirm and
+            share payment instructions.
           </p>
         </div>
 
@@ -612,7 +628,7 @@ export function CheckoutClient() {
               <h2 className="font-[family-name:var(--font-display)] text-xl font-bold text-brand">
                 Send order via
               </h2>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <button
                   type="button"
                   onClick={() => setChannel("whatsapp")}
@@ -639,11 +655,26 @@ export function CheckoutClient() {
                   <Send className="h-4 w-4" />
                   Telegram
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setChannel("email")}
+                  className={clsx(
+                    "flex items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm font-semibold transition",
+                    channel === "email"
+                      ? "border-accent bg-white text-brand ring-1 ring-accent/30"
+                      : "border-border bg-white/70 text-foreground",
+                  )}
+                >
+                  <Mail className="h-4 w-4" />
+                  Email
+                </button>
               </div>
               <p className="mt-2 text-xs text-muted">
                 {channel === "telegram"
-                  ? "Opens Telegram and copies your order so you can paste it in the chat."
-                  : "Opens WhatsApp with your order details filled in."}
+                  ? "Opens Telegram with your full order ready to send — pick our chat and tap Send."
+                  : channel === "email"
+                    ? `Opens your email app with the order addressed to ${settings.orderEmail}.`
+                    : "Opens WhatsApp with your order details filled in."}
               </p>
             </section>
 
@@ -654,23 +685,24 @@ export function CheckoutClient() {
             >
               {channel === "telegram" ? (
                 <Send className="h-4 w-4" />
+              ) : channel === "email" ? (
+                <Mail className="h-4 w-4" />
               ) : (
                 <MessageCircle className="h-4 w-4" />
               )}
               {submitting
                 ? "Saving order…"
-                : `Place order on ${channel === "telegram" ? "Telegram" : "WhatsApp"} ${formatPrice(total)}`}
+                : `Place order on ${channelLabel(channel)} ${formatPrice(total)}`}
               <Lock className="h-3.5 w-3.5 opacity-80" />
             </button>
-            {telegramHint && (
+            {sendHint && (
               <p className="rounded-md bg-[#e8f7ef] px-4 py-3 text-center text-xs text-accent">
-                Order copied. Paste it in the Telegram chat.
+                {sendHint}
               </p>
             )}
             <p className="text-center text-xs text-muted">
-              Saves your order, then opens{" "}
-              {channel === "telegram" ? "Telegram" : "WhatsApp"}. No payment is
-              taken on this website.
+              Saves your order, then opens {channelLabel(channel)}. No payment
+              is taken on this website.
             </p>
           </div>
 

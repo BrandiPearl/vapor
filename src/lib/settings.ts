@@ -24,6 +24,8 @@ export type SiteSettings = {
   shippingOptions: ShippingOption[];
   whatsappNumber: string;
   telegramUrl: string;
+  /** Inbox that receives orders placed via the Email checkout channel. */
+  orderEmail: string;
   announcement: Announcement;
 };
 
@@ -36,6 +38,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "61468292610",
   telegramUrl:
     process.env.NEXT_PUBLIC_TELEGRAM_URL?.trim() || "https://t.me/garyb300",
+  orderEmail:
+    process.env.NEXT_PUBLIC_ORDER_EMAIL?.trim() || "yangsegery@gmail.com",
   announcement: { enabled: false, text: "", href: "" },
 };
 
@@ -107,6 +111,7 @@ export function normalizeSettings(raw: unknown): SiteSettings {
     whatsappNumber:
       toText(row.whatsappNumber) || DEFAULT_SETTINGS.whatsappNumber,
     telegramUrl: toText(row.telegramUrl) || DEFAULT_SETTINGS.telegramUrl,
+    orderEmail: toText(row.orderEmail) || DEFAULT_SETTINGS.orderEmail,
     announcement: normalizeAnnouncement(row.announcement),
   };
 }

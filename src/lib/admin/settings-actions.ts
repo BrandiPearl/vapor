@@ -26,6 +26,7 @@ export async function updateSettingsAction(formData: FormData) {
     shippingOptions,
     whatsappNumber: String(formData.get("whatsappNumber") || ""),
     telegramUrl: String(formData.get("telegramUrl") || ""),
+    orderEmail: String(formData.get("orderEmail") || ""),
     announcement: {
       enabled: formData.get("announcementEnabled") === "on",
       text: String(formData.get("announcementText") || ""),

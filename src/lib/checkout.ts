@@ -24,12 +24,12 @@ export const PAYMENT_OPTIONS = [
   {
     id: "bank" as const,
     label: "Bank transfer",
-    hint: "After you send your order on WhatsApp or Telegram, we will reply with bank details.",
+    hint: "After you send your order, we will reply with bank details.",
   },
   {
     id: "payid" as const,
     label: "PAYID",
-    hint: "After you send your order on WhatsApp or Telegram, we will reply with PAYID details.",
+    hint: "After you send your order, we will reply with PAYID details.",
   },
 ] as const;
 
@@ -76,29 +76,47 @@ export function normalizeWhatsAppPhone(raw: string) {
   return digits;
 }
 
-export function buildWhatsAppOrderMessage(input: {
+function telegramUsernameFromUrl(url: string) {
+  const match = url.match(/t\.me\/([A-Za-z0-9_]+)/i);
+  const handle = match?.[1];
+  if (!handle || /^(share|joinchat|addstickers)$/i.test(handle)) return null;
+  return handle;
+}
+
+export function buildOrderMessage(input: {
   form: CheckoutFormData;
   items: CartLine[];
   subtotal: number;
   shippingPrice: number;
   total: number;
   shippingOptions: ShippingOption[];
+  /** When true, wrap emphasis in * for WhatsApp/Telegram markdown. */
+  rich?: boolean;
 }) {
-  const { form, items, subtotal, shippingPrice, total, shippingOptions } = input;
+  const {
+    form,
+    items,
+    subtotal,
+    shippingPrice,
+    total,
+    shippingOptions,
+    rich = true,
+  } = input;
+  const bold = (s: string) => (rich ? `*${s}*` : s);
   const shippingLabel =
     resolveShippingOption(shippingOptions, form.shipping)?.label ?? "Shipping";
   const paymentLabel =
     PAYMENT_OPTIONS.find((o) => o.id === form.payment)?.label ?? "Payment";
 
   const lines = [
-    "*New order - Aussie Cloud Vape*",
+    bold("New order - Aussie Cloud Vape"),
     "",
-    "*Customer*",
+    bold("Customer"),
     `${form.firstName} ${form.lastName}`,
     form.email,
     form.phone,
     "",
-    "*Billing address*",
+    bold("Billing address"),
     form.address1,
     form.address2 || null,
     `${form.city}, ${form.state} ${form.postcode}`,
@@ -108,7 +126,7 @@ export function buildWhatsAppOrderMessage(input: {
 
   if (form.shipDifferent) {
     lines.push(
-      "*Shipping address*",
+      bold("Shipping address"),
       `${form.shipFirstName} ${form.shipLastName}`,
       form.shipAddress1,
       form.shipAddress2 || null,
@@ -117,7 +135,7 @@ export function buildWhatsAppOrderMessage(input: {
     );
   }
 
-  lines.push("*Items*");
+  lines.push(bold("Items"));
   for (const { product, quantity } of items) {
     lines.push(
       `• ${product.name} x${quantity} - ${formatPrice(product.price * quantity)}`,
@@ -128,7 +146,7 @@ export function buildWhatsAppOrderMessage(input: {
     "",
     `Subtotal: ${formatPrice(subtotal)}`,
     `${shippingLabel}: ${formatPrice(shippingPrice)}`,
-    `*Total: ${formatPrice(total)}*`,
+    bold(`Total: ${formatPrice(total)}`),
     "",
     `Payment preference: ${paymentLabel}`,
   );
@@ -137,7 +155,7 @@ export function buildWhatsAppOrderMessage(input: {
     lines.push(`Coupon: ${form.coupon.trim()}`);
   }
   if (form.notes.trim()) {
-    lines.push("", "*Order notes*", form.notes.trim());
+    lines.push("", bold("Order notes"), form.notes.trim());
   }
 
   lines.push("", "Please confirm stock and send payment details. Thanks!");
@@ -145,20 +163,54 @@ export function buildWhatsAppOrderMessage(input: {
   return lines.filter((l) => l !== null).join("\n");
 }
 
+/** @deprecated Prefer buildOrderMessage — kept for call sites mid-migration. */
+export function buildWhatsAppOrderMessage(
+  input: Parameters<typeof buildOrderMessage>[0],
+) {
+  return buildOrderMessage({ ...input, rich: true });
+}
+
 export function buildWhatsAppUrl(message: string, number: string) {
   const phone = normalizeWhatsAppPhone(number);
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
-export type OrderChannel = "whatsapp" | "telegram";
+/**
+ * Telegram cannot prefill a DM to a username. The share composer is the only
+ * URL that carries the order text — customer picks our chat and hits send.
+ */
+export function buildTelegramOrderUrl(message: string, telegramUrl: string) {
+  const handle = telegramUsernameFromUrl(telegramUrl);
+  const body = handle
+    ? `Please send this order to @${handle}\n\n${message}`
+    : message;
+  return `https://t.me/share/url?text=${encodeURIComponent(body)}`;
+}
 
-/** Telegram has no prefill for direct chats; the UI copies the order instead. */
+export function buildEmailOrderUrl(message: string, orderEmail: string) {
+  const subject = "New order - Aussie Cloud Vape";
+  // mailto bodies must stay relatively short; keep plain text.
+  return `mailto:${encodeURIComponent(orderEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+}
+
+export type OrderChannel = "whatsapp" | "telegram" | "email";
+
 export function buildOrderChatUrl(
   channel: OrderChannel,
   message: string,
   settings: SiteSettings,
 ) {
-  return channel === "telegram"
-    ? settings.telegramUrl
-    : buildWhatsAppUrl(message, settings.whatsappNumber);
+  if (channel === "telegram") {
+    return buildTelegramOrderUrl(message, settings.telegramUrl);
+  }
+  if (channel === "email") {
+    return buildEmailOrderUrl(message, settings.orderEmail);
+  }
+  return buildWhatsAppUrl(message, settings.whatsappNumber);
+}
+
+export function channelLabel(channel: OrderChannel) {
+  if (channel === "telegram") return "Telegram";
+  if (channel === "email") return "Email";
+  return "WhatsApp";
 }

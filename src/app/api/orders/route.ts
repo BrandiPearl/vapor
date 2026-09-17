@@ -5,6 +5,8 @@ import { formatPrice } from "@/lib/site";
 import { meetsMinimumOrder } from "@/lib/settings";
 import { getSiteSettings } from "@/lib/settings-server";
 
+type OrderChannel = "whatsapp" | "telegram" | "email";
+
 type OrderBody = {
   form: {
     email: string;
@@ -38,13 +40,56 @@ type OrderBody = {
   shippingPrice: number;
   total: number;
   whatsappMessage: string;
+  channel?: OrderChannel;
 };
+
+async function deliverOrderEmail(input: {
+  to: string;
+  subject: string;
+  body: string;
+  replyTo: string;
+  customerName: string;
+}) {
+  // FormSubmit delivers without SMTP keys. The inbox must confirm once
+  // (FormSubmit sends an activation mail on the first submission).
+  try {
+    const res = await fetch(
+      `https://formsubmit.co/ajax/${encodeURIComponent(input.to)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          _subject: input.subject,
+          _replyto: input.replyTo,
+          _template: "table",
+          name: input.customerName,
+          email: input.replyTo,
+          message: input.body,
+        }),
+        signal: AbortSignal.timeout(12000),
+      },
+    );
+    return res.ok ? "email:ok" : `email:${res.status}`;
+  } catch {
+    return "email:error";
+  }
+}
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as OrderBody;
-    const { form, items, subtotal, shippingPrice, total, whatsappMessage } =
-      body;
+    const {
+      form,
+      items,
+      subtotal,
+      shippingPrice,
+      total,
+      whatsappMessage,
+      channel = "whatsapp",
+    } = body;
 
     if (!form?.email || !form?.phone || !items?.length) {
       return NextResponse.json(
@@ -53,11 +98,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const { minOrderSubtotal } = await getSiteSettings();
-    if (!meetsMinimumOrder(subtotal, minOrderSubtotal)) {
+    const settings = await getSiteSettings();
+    if (!meetsMinimumOrder(subtotal, settings.minOrderSubtotal)) {
       return NextResponse.json(
         {
-          error: `Minimum order is ${formatPrice(minOrderSubtotal)}. Add more items to continue.`,
+          error: `Minimum order is ${formatPrice(settings.minOrderSubtotal)}. Add more items to continue.`,
         },
         { status: 400 },
       );
@@ -97,6 +142,7 @@ export async function POST(request: Request) {
           lastName: form.lastName,
           email: form.email,
           phone: form.phone,
+          channel,
         },
         billing,
         shipping,
@@ -134,13 +180,27 @@ export async function POST(request: Request) {
       );
     }
 
-    await notifyOwner({
-      kind: "order",
-      text: `New order ${formatPrice(total)} from ${form.firstName} ${form.lastName} (${form.email}). Open admin or WhatsApp to confirm.`,
-      meta: { orderId: data.id, total, email: form.email },
+    const emailStatus = await deliverOrderEmail({
+      to: settings.orderEmail,
+      subject: `New order ${formatPrice(total)} via ${channel}`,
+      body: whatsappMessage,
+      replyTo: form.email.trim(),
+      customerName: `${form.firstName} ${form.lastName}`.trim(),
     });
 
-    return NextResponse.json({ id: data.id });
+    await notifyOwner({
+      kind: "order",
+      text: `New order ${formatPrice(total)} via ${channel} from ${form.firstName} ${form.lastName} (${form.email}).`,
+      meta: {
+        orderId: data.id,
+        total,
+        email: form.email,
+        channel,
+        emailStatus,
+      },
+    });
+
+    return NextResponse.json({ id: data.id, emailStatus });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Could not save order." }, { status: 500 });

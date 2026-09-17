@@ -182,6 +182,20 @@ export function SettingsForm({ settings, action }: Props) {
               className={fieldClass}
             />
           </label>
+          <label className="block text-sm sm:col-span-2">
+            <span className="mb-1.5 block font-medium">Order inbox email</span>
+            <input
+              name="orderEmail"
+              type="email"
+              defaultValue={settings.orderEmail}
+              placeholder="yangsegery@gmail.com"
+              className={fieldClass}
+            />
+            <span className="mt-1.5 block text-xs text-muted">
+              Every order is emailed here. The Email checkout channel also opens
+              the customer&apos;s mail app addressed to this inbox.
+            </span>
+          </label>
         </div>
       </section>
 
