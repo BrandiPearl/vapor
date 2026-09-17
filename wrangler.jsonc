@@ -4,6 +4,10 @@
   "name": "vapor",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Keep dashboard Variables across CI deploys. Secrets are always kept;
+  // without this, plaintext vars added in the Cloudflare UI get wiped on
+  // every Workers Builds deploy.
+  "keep_vars": true,
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

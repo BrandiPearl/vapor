@@ -42,7 +42,12 @@ The app runs on Cloudflare via [OpenNext](https://opennext.js.org/cloudflare) �
    Runtime values must be added as **Secret**, not Variable. `wrangler deploy`
    (which every Workers build runs) deletes all plaintext vars and re-applies
    only those in `wrangler.jsonc`, so a dashboard Variable disappears on the
-   next deploy. Secrets are never removed by a deployment.
+   next deploy. Secrets are never removed by a deployment. This repo sets
+   `keep_vars: true` so plaintext dashboard Variables survive builds too.
+
+   After adding or editing a Secret, click **Deploy** on the Variables and
+   Secrets page — saving alone does not activate it. The name must be exactly
+   `SUPABASE_SERVICE_ROLE_KEY`.
 3. Point **cloudsourceau.com** at the Worker under **Domains → Add custom domain**,
    then update the Hostinger DNS records Cloudflare shows.
 
