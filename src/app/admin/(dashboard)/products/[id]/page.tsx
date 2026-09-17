@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminReadClient } from "@/lib/supabase/admin";
 import { mapDbProduct } from "@/lib/catalog";
 import type { DbProduct } from "@/lib/types";
 import {
@@ -17,7 +17,7 @@ type Props = {
 
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
-  const admin = createAdminClient();
+  const admin = createAdminReadClient();
   const { data, error } = await admin
     .from("products")
     .select(

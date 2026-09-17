@@ -33,6 +33,11 @@ The app runs on Cloudflare via [OpenNext](https://opennext.js.org/cloudflare) �
    build variables** — they are inlined at build time, so runtime variables are not
    enough. Server-only values (`SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_S3_*`,
    `OWNER_*`) belong in **Settings → Variables and Secrets** as *Secret*.
+
+   The two lists are separate: a value added only as a build variable is **not**
+   readable by the running Worker. `SUPABASE_SERVICE_ROLE_KEY` is the common
+   miss — without it `/admin` falls back to read-only mode (and shows a banner
+   saying so), and `/api/orders` cannot record orders.
 3. Point **cloudsourceau.com** at the Worker under **Domains → Add custom domain**,
    then update the Hostinger DNS records Cloudflare shows.
 
@@ -105,6 +110,9 @@ ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='your-strong-password' npm run admin:
 ```
 
 Open `/admin/login`.
+
+If a dashboard page fails it now renders the underlying message (plus a Worker
+log reference) instead of a bare 500, so the cause is visible in the browser.
 
 ## SEO
 

@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminReadClient } from "@/lib/supabase/admin";
 import { mapDbProduct, PRODUCT_COLUMNS } from "@/lib/catalog";
-import type { DbProduct } from "@/lib/types";
+import type { DbProduct, Product } from "@/lib/types";
 import { AdminProductTable } from "@/components/admin/AdminProductTable";
+import { AdminNotice } from "@/components/admin/AdminNotice";
 
 function escapeIlike(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
@@ -15,30 +16,42 @@ type Props = {
 export default async function AdminProductsPage({ searchParams }: Props) {
   const { q = "" } = await searchParams;
   const query = q.trim();
-  const admin = createAdminClient();
 
-  let request = admin
-    .from("products")
-    .select(PRODUCT_COLUMNS)
-    .order("name")
-    .limit(80);
+  let products: Product[] = [];
+  let failure: string | null = null;
 
-  if (query) {
-    const safe = escapeIlike(query);
-    request = request.or(
-      `name.ilike.%${safe}%,slug.ilike.%${safe}%,brand.ilike.%${safe}%`,
-    );
+  try {
+    const admin = createAdminReadClient();
+    let request = admin
+      .from("products")
+      .select(PRODUCT_COLUMNS)
+      .order("name")
+      .limit(80);
+
+    if (query) {
+      const safe = escapeIlike(query);
+      request = request.or(
+        `name.ilike.%${safe}%,slug.ilike.%${safe}%,brand.ilike.%${safe}%`,
+      );
+    }
+
+    const { data, error } = await request;
+    if (error) throw new Error(error.message);
+    products = (data as DbProduct[]).map(mapDbProduct);
+  } catch (err) {
+    console.error("admin products list", err);
+    failure = err instanceof Error ? err.message : String(err);
   }
-
-  const { data, error } = await request;
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const products = (data as DbProduct[]).map(mapDbProduct);
 
   return (
     <div>
+      {failure && (
+        <AdminNotice
+          tone="error"
+          title="Could not load products."
+          detail={failure}
+        />
+      )}
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-brand">

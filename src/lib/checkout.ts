@@ -72,7 +72,7 @@ export function getShippingPrice(id: ShippingId) {
 }
 
 /** Minimum cart subtotal (items only, before shipping) required to place an order. */
-export const MIN_ORDER_SUBTOTAL = 200;
+export const MIN_ORDER_SUBTOTAL = 129;
 
 export function meetsMinimumOrder(subtotal: number) {
   return subtotal >= MIN_ORDER_SUBTOTAL;

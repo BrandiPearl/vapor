@@ -1,12 +1,15 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminReadClient } from "@/lib/supabase/admin";
+import { AdminNotice } from "@/components/admin/AdminNotice";
 
 export default async function AdminHomePage() {
-  const admin = createAdminClient();
   let total = 0;
   let onSale = 0;
   let outOfStock = 0;
+  let failure: string | null = null;
+
   try {
+    const admin = createAdminReadClient();
     const [totalRes, onSaleRes, outOfStockRes] = await Promise.all([
       admin.from("products").select("*", { count: "exact", head: true }),
       admin
@@ -23,6 +26,7 @@ export default async function AdminHomePage() {
     outOfStock = outOfStockRes.count ?? 0;
   } catch (err) {
     console.error("admin dashboard counts", err);
+    failure = err instanceof Error ? err.message : String(err);
   }
 
   const cards = [
@@ -33,6 +37,13 @@ export default async function AdminHomePage() {
 
   return (
     <div>
+      {failure && (
+        <AdminNotice
+          tone="error"
+          title="Could not read the catalogue counts."
+          detail={failure}
+        />
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-brand">

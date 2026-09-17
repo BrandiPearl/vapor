@@ -5,7 +5,11 @@ import { extname } from "path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  createAdminClient,
+  hasServiceRoleKey,
+  SERVICE_ROLE_HELP,
+} from "@/lib/supabase/admin";
 import { makeSlug } from "@/lib/admin/utils";
 
 const BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "products";
@@ -74,6 +78,9 @@ async function uploadImage(file: File, slug: string) {
 
 export async function createProductAction(formData: FormData) {
   await requireAdmin();
+  if (!hasServiceRoleKey()) {
+    return { ok: false as const, error: SERVICE_ROLE_HELP };
+  }
 
   const input = parseProductForm(formData);
   if (!input.name || !input.slug) {
@@ -130,6 +137,9 @@ export async function createProductAction(formData: FormData) {
 
 export async function updateProductAction(id: string, formData: FormData) {
   await requireAdmin();
+  if (!hasServiceRoleKey()) {
+    return { ok: false as const, error: SERVICE_ROLE_HELP };
+  }
 
   const input = parseProductForm(formData);
   if (!input.name || !input.slug) {
@@ -198,6 +208,9 @@ export async function updateProductAction(id: string, formData: FormData) {
 
 export async function deleteProductAction(id: string) {
   await requireAdmin();
+  if (!hasServiceRoleKey()) {
+    return { ok: false as const, error: SERVICE_ROLE_HELP };
+  }
   const admin = createAdminClient();
 
   const { data: existing } = await admin
