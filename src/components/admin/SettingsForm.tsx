@@ -188,7 +188,7 @@ export function SettingsForm({ settings, action }: Props) {
               name="orderEmail"
               type="email"
               defaultValue={settings.orderEmail}
-              placeholder="yangsegery@gmail.com"
+              placeholder="sales@cloudsourceau.com"
               className={fieldClass}
             />
             <span className="mt-1.5 block text-xs text-muted">

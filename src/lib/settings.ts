@@ -39,7 +39,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   telegramUrl:
     process.env.NEXT_PUBLIC_TELEGRAM_URL?.trim() || "https://t.me/garyb300",
   orderEmail:
-    process.env.NEXT_PUBLIC_ORDER_EMAIL?.trim() || "yangsegery@gmail.com",
+    process.env.NEXT_PUBLIC_ORDER_EMAIL?.trim() || "sales@cloudsourceau.com",
   announcement: { enabled: false, text: "", href: "" },
 };
 

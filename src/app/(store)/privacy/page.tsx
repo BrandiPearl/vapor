@@ -26,9 +26,11 @@ export default function PrivacyPage() {
           to fulfil your order.
         </p>
         <p>
-          For privacy requests, contact us on WhatsApp or Telegram via the
-          Contact page. A complete privacy policy will ship with the
-          Supabase-backed auth and checkout release.
+          For privacy requests, email{" "}
+          <a href="mailto:sales@cloudsourceau.com" className="text-accent underline">
+            sales@cloudsourceau.com
+          </a>{" "}
+          or contact us on WhatsApp or Telegram via the Contact page.
         </p>
       </div>
     </div>

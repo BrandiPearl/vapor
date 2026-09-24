@@ -3,19 +3,28 @@
 import { useSiteSettings } from "@/components/SettingsProvider";
 import { getWhatsAppContactUrl } from "@/lib/site";
 
-/** Footer chat links, driven by the settings the owner edits in /admin. */
+/** Footer contact links, driven by the settings the owner edits in /admin. */
 export function ContactLinks() {
   const { settings } = useSiteSettings();
   const whatsappUrl = getWhatsAppContactUrl(undefined, settings.whatsappNumber);
+  const orderEmail = settings.orderEmail;
 
   return (
     <>
+      {orderEmail && (
+        <a
+          href={`mailto:${orderEmail}`}
+          className="mt-2 block text-sm text-white/80 hover:text-white"
+        >
+          {orderEmail}
+        </a>
+      )}
       {whatsappUrl && (
         <a
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 block text-sm text-white/80 hover:text-white"
+          className="mt-1.5 block text-sm text-white/80 hover:text-white"
         >
           WhatsApp
         </a>

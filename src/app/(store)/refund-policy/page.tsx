@@ -35,8 +35,11 @@ export default function RefundPolicyPage() {
       </p>
       <p>
         Shipping delays caused by carriers are not grounds for a refund once the
-        order has been dispatched. Contact us on WhatsApp or Telegram for
-        support.
+        order has been dispatched. Email{" "}
+        <a href="mailto:sales@cloudsourceau.com" className="text-accent underline">
+          sales@cloudsourceau.com
+        </a>{" "}
+        or contact us on WhatsApp or Telegram for support.
       </p>
     </PolicyLayout>
   );

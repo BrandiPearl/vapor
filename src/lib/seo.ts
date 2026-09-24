@@ -78,6 +78,7 @@ export function organizationJsonLd() {
     url: SITE_URL,
     logo: absoluteUrl("/logo.svg"),
     description: DEFAULT_DESCRIPTION,
+    email: "sales@cloudsourceau.com",
     address: {
       "@type": "PostalAddress",
       addressLocality: "Brisbane",
@@ -87,16 +88,13 @@ export function organizationJsonLd() {
       "@type": "Country",
       name: "Australia",
     },
-    ...(whatsapp
-      ? {
-          contactPoint: {
-            "@type": "ContactPoint",
-            contactType: "customer service",
-            availableLanguage: "English",
-            url: whatsapp,
-          },
-        }
-      : {}),
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      email: "sales@cloudsourceau.com",
+      availableLanguage: "English",
+      ...(whatsapp ? { url: whatsapp } : {}),
+    },
   };
 }
 
