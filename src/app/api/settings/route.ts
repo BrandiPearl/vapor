@@ -13,8 +13,7 @@ export async function GET() {
 
   return NextResponse.json(settings, {
     headers: {
-      "cache-control":
-        "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+      "cache-control": "no-store",
     },
   });
 }

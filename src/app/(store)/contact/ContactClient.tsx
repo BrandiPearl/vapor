@@ -3,13 +3,14 @@
 import { FormEvent, useState } from "react";
 import { Mail, MapPin, MessageCircle, Send } from "lucide-react";
 import { getWhatsAppContactUrl } from "@/lib/site";
+import { STORE_ORDER_EMAIL } from "@/lib/settings";
 import { useSiteSettings } from "@/components/SettingsProvider";
 
 export default function ContactClient() {
   const [sent, setSent] = useState(false);
   const { settings } = useSiteSettings();
   const telegramUrl = settings.telegramUrl;
-  const orderEmail = settings.orderEmail;
+  const orderEmail = settings.orderEmail || STORE_ORDER_EMAIL;
   const whatsappUrl = getWhatsAppContactUrl(
     "Hi Aussie Cloud Vape, I have a question.",
     settings.whatsappNumber,

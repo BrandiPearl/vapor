@@ -29,6 +29,26 @@ export type SiteSettings = {
   announcement: Announcement;
 };
 
+/** Canonical store inbox — do not allow the old Gmail address to stick around. */
+export const STORE_ORDER_EMAIL = "sales@cloudsourceau.com";
+
+const LEGACY_ORDER_EMAILS = new Set([
+  "yangsegery@gmail.com",
+  "billleynyuy@gmail.com",
+]);
+
+function toText(value: unknown, fallback = "") {
+  return typeof value === "string" ? value.trim() : fallback;
+}
+
+function resolveOrderEmail(raw: unknown) {
+  const value = toText(raw);
+  if (!value || LEGACY_ORDER_EMAILS.has(value.toLowerCase())) {
+    return STORE_ORDER_EMAIL;
+  }
+  return value;
+}
+
 export const DEFAULT_SETTINGS: SiteSettings = {
   minOrderSubtotal: 129,
   shippingOptions: [
@@ -38,8 +58,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "61468292610",
   telegramUrl:
     process.env.NEXT_PUBLIC_TELEGRAM_URL?.trim() || "https://t.me/garyb300",
-  orderEmail:
-    process.env.NEXT_PUBLIC_ORDER_EMAIL?.trim() || "sales@cloudsourceau.com",
+  orderEmail: resolveOrderEmail(process.env.NEXT_PUBLIC_ORDER_EMAIL),
   announcement: { enabled: false, text: "", href: "" },
 };
 
@@ -47,10 +66,6 @@ function toMoney(value: unknown, fallback: number) {
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n) || n < 0) return fallback;
   return Math.round(n * 100) / 100;
-}
-
-function toText(value: unknown, fallback = "") {
-  return typeof value === "string" ? value.trim() : fallback;
 }
 
 export function slugifyOptionId(value: string, index: number) {
@@ -111,7 +126,7 @@ export function normalizeSettings(raw: unknown): SiteSettings {
     whatsappNumber:
       toText(row.whatsappNumber) || DEFAULT_SETTINGS.whatsappNumber,
     telegramUrl: toText(row.telegramUrl) || DEFAULT_SETTINGS.telegramUrl,
-    orderEmail: toText(row.orderEmail) || DEFAULT_SETTINGS.orderEmail,
+    orderEmail: resolveOrderEmail(row.orderEmail),
     announcement: normalizeAnnouncement(row.announcement),
   };
 }
